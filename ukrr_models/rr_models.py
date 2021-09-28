@@ -132,6 +132,10 @@ class UKRR_Patient(Base):
         xml_identifier.NumberType = "NI"
 
         patient_record.Patient.PatientNumbers.append(xml_identifier)
+        
+        if sending_facility == 'UKRR':
+            # TODO: Create a Program Membership Here
+            pass
 
         if full_patient_record:
             # TODO: Extract the other stuff here
