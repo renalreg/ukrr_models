@@ -61,6 +61,9 @@ class UKRR_Patient(Base):
         sending_extract: str = 'UKRDC',
         full_patient_record: bool = True
     ):
+    
+        if sending_facility == 'UKRR':
+            full_patient_record = False
 
         patient_record = ukrdc_schema.PatientRecord()
         patient_record.SendingFacility = sending_facility
