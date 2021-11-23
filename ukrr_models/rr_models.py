@@ -15,7 +15,7 @@ from sqlalchemy.orm.session import object_session
 import pyxb
 
 from ukrdc_schema import ukrdc_schema
-from ukrdc.services.utils import get_xml_datetime
+from ukrdc.services.utils import get_xml_datetime, customdate
 import uuid
 from ukrdc.services.ukrdc_models import NAMESPACE
 
@@ -28,20 +28,6 @@ Base = declarative_base()
 # This isn't required now, nor does the code below reflect this but
 # I (GS) seem to recall this caused me a lot of hassle so I'm going to
 # preserve the comment just incase we fall through a portal to the past.
-
-
-class customdate(pyxb.binding.datatypes.date):
-    def __new__(cls, *args, **kw):
-        # Because of some python, XsdLiteral (pyxb.binding.datatypes line 761)
-        # creates a new custom date object, but with inputs like a datetime
-        # Then the redefinition will remove errors.
-        # e.g. If the hour is 12, and minutes, seconds, microseconds and TZ is 0 or empty, remove it
-        # Similar issue: https://github.com/AuthorizeNet/sdk-python/issues/145
-
-        if len(args) == 8:
-            if args[3] == 12 and all(not bool(x) for x in args[-4:]):
-                args = args[:3]
-        return super().__new__(cls, *args, **kw)
 
 
 class UKRR_Patient(Base):
@@ -164,8 +150,8 @@ class UKRR_Patient(Base):
                 patient_record.ProgramMemberships = pyxb.BIND()
                 xml_program_membership = ukrdc_schema.ProgramMembership()
                 xml_program_membership.ProgramName = "UKRDC"
-                date, _ = get_xml_datetime(self.date_registered).split("T")
-                xml_program_membership.FromTime = customdate(date)
+                reg_date, _ = get_xml_datetime(self.date_registered).split("T")
+                xml_program_membership.FromTime = customdate(reg_date)
                 yhs_external_id = uuid.uuid5(
                     NAMESPACE, str(nhs_identifier) + "UKRDC"
                 ).hex
