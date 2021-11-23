@@ -12,11 +12,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import object_session
 
-
 import pyxb
 
 from ukrdc_schema import ukrdc_schema
-from ukrdc.services.utils import get_xml_datetime
+from ukrdc.services.utils import get_xml_datetime, customdate
+import uuid
+from ukrdc.services.ukrdc_models import NAMESPACE
 
 Base = declarative_base()
 
@@ -144,6 +145,19 @@ class UKRR_Patient(Base):
                 xml_identifier.NumberType = "NI"
 
                 patient_record.Patient.PatientNumbers.append(xml_identifier)
+
+                # RR Program Membership
+                patient_record.ProgramMemberships = pyxb.BIND()
+                xml_program_membership = ukrdc_schema.ProgramMembership()
+                xml_program_membership.ProgramName = "UKRDC"
+                reg_date, _ = get_xml_datetime(self.date_registered).split("T")
+                xml_program_membership.FromTime = customdate(reg_date)
+                yhs_external_id = uuid.uuid5(
+                    NAMESPACE, str(nhs_identifier) + "UKRDC"
+                ).hex
+                xml_program_membership.ExternalId = yhs_external_id
+
+                patient_record.ProgramMemberships.append(xml_program_membership)
 
         # RR National Identifier
         xml_identifier = ukrdc_schema.PatientNumber()
