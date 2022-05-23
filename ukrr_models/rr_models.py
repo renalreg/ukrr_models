@@ -1,11 +1,8 @@
 from sqlalchemy import (
-    Boolean,
     Column,
     Date,
-    DateTime,
     ForeignKey,
     Integer,
-    LargeBinary,
     String,
 )
 from sqlalchemy.ext.declarative import declarative_base
@@ -15,9 +12,12 @@ from sqlalchemy.orm.session import object_session
 import pyxb
 
 from ukrdc_schema import ukrdc_schema
+
 from ukrdc.services.utils import get_xml_datetime, customdate
 import uuid
 from ukrdc.services.ukrdc_models import NAMESPACE
+from rr.nhs import get_organization, OrganizationType, valid_number
+from ukrdc.services.exceptions import PatientIdentifierNotFoundError
 
 Base = declarative_base()
 
@@ -67,10 +67,12 @@ class UKRR_Patient(Base):
         # If sending_facility is supplied we assume only
         # one set of data returned.
         sending_facility: str = "UKRR",
-        # TODO: UKRR is not a valid value for SendingExtract yet.
-        sending_extract: str = "UKRDC",
+        # Sending extract change from UKRDC to UKRR
+        sending_extract: str = "UKRR",
         full_patient_record: bool = True,
     ):
+        surname = self.surname
+        forename = self.forename
 
         if sending_facility == "UKRR":
             full_patient_record = False
@@ -78,10 +80,9 @@ class UKRR_Patient(Base):
         patient_record = ukrdc_schema.PatientRecord()
         patient_record.SendingFacility = sending_facility
         patient_record.SendingExtract = sending_extract
-
         patient_record.Patient = ukrdc_schema.Patient()
-
         patient_record.Patient.BirthTime = get_xml_datetime(self.date_birth)
+        patient_record.Patient.DeathTime = get_xml_datetime(self.date_death)
 
         if self.sex:
             patient_record.Patient.Gender = self.sex
@@ -89,10 +90,6 @@ class UKRR_Patient(Base):
         patient_record.Patient.PatientNumbers = pyxb.BIND()
 
         if sending_facility == "UKRR":
-            patient_record.Patient.Names = pyxb.BIND(
-                pyxb.BIND(use="L", Family=self.surname, Given=self.forename)
-            )
-
             xml_identifier = ukrdc_schema.PatientNumber()
             xml_identifier.Number = str(self.rr_no)
             # TODO: This may not pass validation.
@@ -110,28 +107,31 @@ class UKRR_Patient(Base):
             if patient_demographics:
                 surname = patient_demographics.surname
                 forename = patient_demographics.forename
-            else:
-                # TODO: This may be an issue with old records?
-                surname = self.surname
-                forename = self.forename
-
-            patient_record.Patient.Names = pyxb.BIND(
-                pyxb.BIND(use="L", Family=surname, Given=forename)
-            )
 
             for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
                 if nhs_identifier:
-                    xml_identifier = ukrdc_schema.PatientNumber()
 
+                    xml_identifier = ukrdc_schema.PatientNumber()
                     xml_identifier.Number = str(nhs_identifier)
-                    # TODO: Work this out
-                    xml_identifier.Organization = "NHS"
+
+                    organization = get_organization(nhs_identifier)
+                    if organization == OrganizationType.UNK or not valid_number(
+                        nhs_identifier, organization
+                    ):
+                        raise PatientIdentifierNotFoundError(
+                            "Invalid NHS Number Supplied"
+                        )
+                    xml_identifier.Organization = organization.name
                     xml_identifier.NumberType = "MRN"
 
                     patient_record.Patient.PatientNumbers.append(xml_identifier)
 
                     # Once we've got one quit.
                     break
+
+        patient_record.Patient.Names = pyxb.BIND(
+            pyxb.BIND(use="L", Family=surname, Given=forename)
+        )
 
         # National Identifiers
         for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
@@ -140,8 +140,14 @@ class UKRR_Patient(Base):
                 xml_identifier = ukrdc_schema.PatientNumber()
 
                 xml_identifier.Number = str(nhs_identifier)
-                # TODO: Find the actual organization.
-                xml_identifier.Organization = "NHS"
+
+                organization = get_organization(nhs_identifier)
+                if organization == OrganizationType.UNK or not valid_number(
+                    nhs_identifier, organization
+                ):
+                    raise PatientIdentifierNotFoundError("Invalid NHS Number Supplied")
+
+                xml_identifier.Organization = organization.name
                 xml_identifier.NumberType = "NI"
 
                 patient_record.Patient.PatientNumbers.append(xml_identifier)
@@ -149,11 +155,11 @@ class UKRR_Patient(Base):
                 # RR Program Membership
                 patient_record.ProgramMemberships = pyxb.BIND()
                 xml_program_membership = ukrdc_schema.ProgramMembership()
-                xml_program_membership.ProgramName = "UKRDC"
+                xml_program_membership.ProgramName = "UKRR"
                 reg_date, _ = get_xml_datetime(self.date_registered).split("T")
                 xml_program_membership.FromTime = customdate(reg_date)
                 yhs_external_id = uuid.uuid5(
-                    NAMESPACE, str(nhs_identifier) + "UKRDC"
+                    NAMESPACE, str(nhs_identifier) + "UKRR"
                 ).hex
                 xml_program_membership.ExternalId = yhs_external_id
 
@@ -177,7 +183,6 @@ class UKRR_Patient(Base):
             # TODO: Extract the other stuff here
 
             # Treatments
-
             try:
                 # I suspect this can fail if you create an object
                 # outside of a session
@@ -296,10 +301,8 @@ class UKRR_Patient(Base):
                             treatment.DischargeLocation.CodingStandard = "RR1+"
 
                     patient_record.Encounters.append(treatment)
-
             except Exception:
                 raise
-
         return patient_record.toDOM().toprettyxml()
 
 
