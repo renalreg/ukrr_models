@@ -118,20 +118,29 @@ class UKRR_Patient(Base):
             patient_record.Patient.Names = pyxb.BIND(
                 pyxb.BIND(use="L", Family=surname, Given=forename)
             )
+            
+            if patient_demographics:
+                xml_identifier = ukrdc_schema.PatientNumber()
 
-            for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
-                if nhs_identifier:
-                    xml_identifier = ukrdc_schema.PatientNumber()
+                xml_identifier.Number = str(nhs_identifier)
+                xml_identifier.Organization = "NHS"
+                xml_identifier.NumberType = "MRN"
+                patient_record.Patient.PatientNumbers.append(xml_identifier)
 
-                    xml_identifier.Number = str(nhs_identifier)
-                    # TODO: Work this out
-                    xml_identifier.Organization = "NHS"
-                    xml_identifier.NumberType = "MRN"
+            else:
+                for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
+                    if nhs_identifier:
+                        xml_identifier = ukrdc_schema.PatientNumber()
 
-                    patient_record.Patient.PatientNumbers.append(xml_identifier)
+                        xml_identifier.Number = str(nhs_identifier)
+                        # TODO: Work this out
+                        xml_identifier.Organization = "NHS"
+                        xml_identifier.NumberType = "MRN"
 
-                    # Once we've got one quit.
-                    break
+                        patient_record.Patient.PatientNumbers.append(xml_identifier)
+
+                        # Once we've got one quit.
+                        break
 
         # National Identifiers
         for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
@@ -146,18 +155,18 @@ class UKRR_Patient(Base):
 
                 patient_record.Patient.PatientNumbers.append(xml_identifier)
 
-                # RR Program Membership
-                patient_record.ProgramMemberships = pyxb.BIND()
-                xml_program_membership = ukrdc_schema.ProgramMembership()
-                xml_program_membership.ProgramName = "UKRDC"
-                reg_date, _ = get_xml_datetime(self.date_registered).split("T")
-                xml_program_membership.FromTime = customdate(reg_date)
-                yhs_external_id = uuid.uuid5(
-                    NAMESPACE, str(nhs_identifier) + "UKRDC"
-                ).hex
-                xml_program_membership.ExternalId = yhs_external_id
+        # RR Program Membership
+        patient_record.ProgramMemberships = pyxb.BIND()
+        xml_program_membership = ukrdc_schema.ProgramMembership()
+        xml_program_membership.ProgramName = "UKRDC"
+        reg_date, _ = get_xml_datetime(self.date_registered).split("T")
+        xml_program_membership.FromTime = customdate(reg_date)
+        yhs_external_id = uuid.uuid5(
+            NAMESPACE, str(nhs_identifier) + "UKRDC"
+        ).hex
+        xml_program_membership.ExternalId = yhs_external_id
 
-                patient_record.ProgramMemberships.append(xml_program_membership)
+        patient_record.ProgramMemberships.append(xml_program_membership)
 
         # RR National Identifier
         xml_identifier = ukrdc_schema.PatientNumber()
@@ -321,6 +330,7 @@ class Patient_Demographics(Base):
     chi_no = Column(Integer)
     hsc_no = Column(Integer)
     uktssa_no = Column(Integer)
+    local_hosp_no = COlumn(String)
 
     first_seen_date = Column(Date)
 
