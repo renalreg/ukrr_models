@@ -70,8 +70,6 @@ class UKRR_Patient(Base):
         sending_extract: str = "UKRR",
         full_patient_record: bool = True,
     ):
-        surname = self.surname
-        forename = self.forename
 
         if sending_facility == "UKRR":
             full_patient_record = False
@@ -97,6 +95,9 @@ class UKRR_Patient(Base):
             xml_identifier.Organization = "UKRR"
             xml_identifier.NumberType = "MRN"
             patient_record.Patient.PatientNumbers.append(xml_identifier)
+            
+            surname = self.surname
+            forename = self.forename
 
         else:
             patient_demographics = self.patient_demographics.filter(
@@ -130,7 +131,10 @@ class UKRR_Patient(Base):
 
                     # Once we've got one quit.
                     break
-
+                    
+            surname = self.surname
+            forename = self.forename
+                    
         patient_record.Patient.Names = pyxb.BIND(
             pyxb.BIND(use="L", Family=surname, Given=forename)
         )
@@ -321,7 +325,7 @@ class Patient_Demographics(Base):
     chi_no = Column(Integer)
     hsc_no = Column(Integer)
     uktssa_no = Column(Integer)
-    local_hosp_no = COlumn(String)
+    local_hosp_no = Column(String)
 
     first_seen_date = Column(Date)
 
