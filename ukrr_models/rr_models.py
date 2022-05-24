@@ -158,8 +158,6 @@ class UKRR_Patient(Base):
 
                 patient_record.Patient.PatientNumbers.append(xml_identifier)
 
-        patient_record.ProgramMemberships.append(xml_program_membership)
-
         # RR National Identifier
         xml_identifier = ukrdc_schema.PatientNumber()
         xml_identifier.Number = str(self.rr_no)
@@ -179,6 +177,8 @@ class UKRR_Patient(Base):
                 NAMESPACE, str(nhs_identifier) + "UKRR"
             ).hex
             xml_program_membership.ExternalId = yhs_external_id
+            
+            patient_record.ProgramMemberships.append(xml_program_membership)
 
         if full_patient_record:
             # TODO: Extract the other stuff here
