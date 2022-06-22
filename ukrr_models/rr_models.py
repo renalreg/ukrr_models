@@ -52,6 +52,17 @@ class UKRR_Patient(Base):
     date_birth = Column(Date)
     date_death = Column(Date)
 
+    ethnicity = Column("ethgr_code", String)
+
+    blood_group = Column(String)
+    blood_rhesus = Column("blood_group_rhesus", String)
+
+    cod_read = Column(String)
+    # TODO: These should be updated to String in the DB.
+    cod_edta1 = Column(Integer)
+    cod_edta2 = Column(Integer)
+    cod_text = Column(String)
+
     # This is the date the patient was
     # first loaded into the UKRR database
     date_registered = Column(Date)
@@ -62,6 +73,94 @@ class UKRR_Patient(Base):
         "Patient_Demographics", backref="patient", lazy="dynamic"
     )
 
+    def create_temp_treatments(cursor):
+
+        try:
+            sql_string = """
+            CREATE TABLE TEMP_TREATMENTS (
+                RR_NO INT,
+                FROM_TIME DATETIME,
+                ADMITREASONCODE VARCHAR(3),
+                HEALTHCAREFACILITYCODE VARCHAR(10),
+                TO_TIME DATETIME,
+                DISCHARGEREASONCODE VARCHAR(3),
+                DISCHARGELOCATION VARCHAR(10)
+            ) """
+            cursor.execute(sql_string)
+        except:
+            print("TEMP_TREATMENTS table already exists")
+
+        sql_string = """TRUNCATE TABLE TEMP_TREATMENTS"""
+        cursor.execute(sql_string)
+
+        # NOTE: If you don't do this the uncomitted DDL
+        # locks everything up. This also applies if using
+        # temporary tables.
+        cursor.connection.commit()
+
+        sql_string = """
+        INSERT INTO TEMP_TREATMENTS
+        SELECT
+            A.RR_NO,
+            A.DATE_START AS FROM_TIME,
+            CASE
+                WHEN C.EQUIV_MODALITY IS NOT NULL
+                    THEN C.EQUIV_MODALITY
+                ELSE
+                    A.TREATMENT_MODALITY
+            END AS ADMITREASONCODE,
+            A.TREATMENT_CENTRE AS HEALTHCAREFACILITYCODE,
+            B.DATE_START AS TO_TIME,
+            B.TREATMENT_MODALITY AS DISCHARGEREASONCODE,
+            B.TREATMENT_CENTRE AS DISCHARGELOCATION
+        FROM
+        (
+        SELECT
+            RR_NO,
+            DATE_START,
+            DATE_END,
+            YEAR_END_SEQ,
+            TREATMENT_MODALITY,
+            HOSP_CENTRE,
+            TREATMENT_CENTRE,
+            ROW_NUMBER() OVER (PARTITION BY RR_NO ORDER BY DATE_START ASC, YEAR_END_SEQ ASC) AS ROWNUMBER
+        FROM
+            TREATMENT
+        ) A
+        LEFT JOIN
+        (
+        SELECT
+            RR_NO,
+            DATE_START,
+            DATE_END,
+            YEAR_END_SEQ,
+            TREATMENT_MODALITY,
+            HOSP_CENTRE,
+            TREATMENT_CENTRE,
+            ROW_NUMBER() OVER (PARTITION BY RR_NO ORDER BY DATE_START ASC, YEAR_END_SEQ ASC) AS ROWNUMBER
+        FROM
+            TREATMENT
+        ) B
+            ON
+                A.RR_NO = B.RR_NO AND
+                A.ROWNUMBER = B.ROWNUMBER - 1 AND
+                A.HOSP_CENTRE = B.HOSP_CENTRE
+        LEFT JOIN MODALITY_CODES C ON C.REGISTRY_CODE = A.TREATMENT_MODALITY
+        LEFT JOIN MODALITY_CODES D ON D.REGISTRY_CODE = B.TREATMENT_MODALITY
+        WHERE
+            C.TRANSFER_OUT = 0 AND
+            C.REGISTRY_CODE_TYPE <> 'X'
+        ORDER BY
+            A.RR_NO,
+            A.DATE_START,
+            A.YEAR_END_SEQ
+        """
+
+        cursor.execute(sql_string)
+
+        # Apparently the same with this.
+        cursor.connection.commit()
+
     def as_pyxb_xml(
         self,
         # If sending_facility is supplied we assume only
@@ -69,7 +168,10 @@ class UKRR_Patient(Base):
         sending_facility: str = "UKRR",
         sending_extract: str = "UKRR",
         full_patient_record: bool = True,
+        treatment_cache: bool = False,
     ):
+
+        # TODO: We need to handle Refused Consent Patients
 
         if sending_facility == "UKRR":
             full_patient_record = False
@@ -95,7 +197,7 @@ class UKRR_Patient(Base):
             xml_identifier.Organization = "UKRR"
             xml_identifier.NumberType = "MRN"
             patient_record.Patient.PatientNumbers.append(xml_identifier)
-            
+
             surname = self.surname
             forename = self.forename
 
@@ -109,6 +211,7 @@ class UKRR_Patient(Base):
                 forename = patient_demographics.forename
                 local_hosp_no = patient_demographics.local_hosp_no
 
+                xml_identifier = ukrdc_schema.PatientNumber()
                 xml_identifier.Number = str(local_hosp_no)
                 xml_identifier.Organization = "LOCALHOSP"
                 xml_identifier.NumberType = "MRN"
@@ -119,9 +222,8 @@ class UKRR_Patient(Base):
                     if organization == OrganizationType.UNK or not valid_number(
                         nhs_identifier, organization
                     ):
-                        raise PatientIdentifierNotFoundError(
-                            "Invalid NHS Number Supplied"
-                        )
+                        continue
+
                     xml_identifier = ukrdc_schema.PatientNumber()
                     xml_identifier.Number = str(nhs_identifier)
                     xml_identifier.Organization = organization.name
@@ -131,10 +233,10 @@ class UKRR_Patient(Base):
 
                     # Once we've got one quit.
                     break
-                    
-            surname = self.surname
-            forename = self.forename
-                    
+
+                surname = self.surname
+                forename = self.forename
+
         patient_record.Patient.Names = pyxb.BIND(
             pyxb.BIND(use="L", Family=surname, Given=forename)
         )
@@ -173,73 +275,154 @@ class UKRR_Patient(Base):
             xml_program_membership.ProgramName = "UKRR"
             reg_date, _ = get_xml_datetime(self.date_registered).split("T")
             xml_program_membership.FromTime = customdate(reg_date)
-            yhs_external_id = uuid.uuid5(
-                NAMESPACE, str(nhs_identifier) + "UKRR"
-            ).hex
+            yhs_external_id = uuid.uuid5(NAMESPACE, str(nhs_identifier) + "UKRR").hex
             xml_program_membership.ExternalId = yhs_external_id
-            
+
             patient_record.ProgramMemberships.append(xml_program_membership)
 
         if full_patient_record:
             # TODO: Extract the other stuff here
 
+            # Ethnicity
+            if self.ethnicity:
+                if len(self.ethnicity) == 1:
+                    # TODO: We need a conversion for the READ ethnicity codes
+                    ethnicity = ukrdc_schema.EthnicGroup()
+                    ethnicity.Code = self.ethnicity
+                    ethnicity.CodingStandard = "NHS_DATA_DICTIONARY"
+                    patient_record.Patient.EthnicGroup = ethnicity
+
+            # TODO: First Seen Height/Weight/Creatinine
+            # These would need creating but using "First Seen Date"
+            # As the date of the results/observations
+
+            # TODO: Adult Height
+            # Not sure what we can do about this as there's no date
+            # Could set it to be the same as their 18th Birthday but
+            # That seems a bit random. Needs discussion.
+
+            # Cause of Death
+
+            # TODO: COD_READ
+
+            patient_record.Diagnoses = pyxb.BIND()
+
+            if self.cod_edta1:
+                cause_of_death = ukrdc_schema.CauseOfDeath()
+                diagnosis = ukrdc_schema.CF_EDTA_COD()
+                # TODO: The str() can be removed once the DB field is changed.
+                diagnosis.Code = str(self.cod_edta1)
+                diagnosis.CodingStandard = "EDTA_COD"
+                cause_of_death.Diagnosis = diagnosis
+                cause_of_death.Description = self.cod_text
+
+                patient_record.Diagnoses.append(cause_of_death)
+
+            # TODO: COD_EDTA1
+
+            # Blood Type
+            # TODO: Need to check UKRR codes match
+            if self.blood_group:
+                patient_record.Patient.BloodGroup = self.blood_group
+            if self.blood_rhesus:
+                patient_record.Patient.BloodRhesus = self.blood_rhesus
+
+            # TODO: Family Doctor
+
+            # TODO: Other IDs - NHSBT, SCOT_REG, UKRR_UID etc. - Needs discussion.
+
+            # TODO: BIRTH_NAME / ALIAS_NAME
+
             # Treatments
+
+            # TODO: The 'X' Codes need Reviewing. In particular
+            # Acute Episode without RRT which may qualify as something akin
+            # to Conservative Management.
+
             try:
                 # I suspect this can fail if you create an object
                 # outside of a session
 
-                sql_string = """
-                SELECT
-                    A.RR_NO,
-                    A.DATE_START AS FROM_TIME,
-                    A.TREATMENT_MODALITY AS ADMITREASONCODE,
-                    A.TREATMENT_CENTRE AS HEALTHCAREFACILITYCODE,
-                    B.DATE_START AS TO_TIME,
-                    B.TREATMENT_MODALITY AS DISCHARGEREASONCODE,
-                    B.TREATMENT_CENTRE AS DISCHARGELOCATION
-                FROM
-                (
-                SELECT
-                    RR_NO,
-                    DATE_START,
-                    DATE_END,
-                    YEAR_END_SEQ,
-                    TREATMENT_MODALITY,
-                    HOSP_CENTRE,
-                    TREATMENT_CENTRE,
-                    ROW_NUMBER() OVER (PARTITION BY RR_NO ORDER BY DATE_START ASC, YEAR_END_SEQ ASC) AS ROWNUMBER
-                FROM
-                    TREATMENT
-                ) A
-                LEFT JOIN
-                (
-                SELECT
-                    RR_NO,
-                    DATE_START,
-                    DATE_END,
-                    YEAR_END_SEQ,
-                    TREATMENT_MODALITY,
-                    HOSP_CENTRE,
-                    TREATMENT_CENTRE,
-                    ROW_NUMBER() OVER (PARTITION BY RR_NO ORDER BY DATE_START ASC, YEAR_END_SEQ ASC) AS ROWNUMBER
-                FROM
-                    TREATMENT
-                ) B
-                    ON
-                        A.RR_NO = B.RR_NO AND
-                        A.ROWNUMBER = B.ROWNUMBER - 1 AND
-                        A.HOSP_CENTRE = B.HOSP_CENTRE
-                LEFT JOIN MODALITY_CODES C ON C.REGISTRY_CODE = A.TREATMENT_MODALITY
-                LEFT JOIN MODALITY_CODES D ON D.REGISTRY_CODE = B.TREATMENT_MODALITY
-                WHERE
-                    A.RR_NO = :rr_no AND
-                    C.TRANSFER_OUT = 0 AND
-                    A.HOSP_CENTRE = :hosp_centre
-                ORDER BY
-                    A.RR_NO,
-                    A.DATE_START,
-                    A.YEAR_END_SEQ
-                """
+                if treatment_cache:
+                    sql_string = """
+                    SELECT
+                        RR_NO,
+                        FROM_TIME,
+                        ADMITREASONCODE,
+                        HEALTHCAREFACILITYCODE,
+                        TO_TIME,
+                        DISCHARGEREASONCODE,
+                        DISCHARGELOCATION
+                    FROM
+                        TEMP_TREATMENTS
+                    WHERE
+                        RR_NO = :rr_no AND
+                        HEALTHCAREFACILITYCODE = :hosp_centre
+                    ORDER BY
+                        FROM_TIME"""
+                else:
+                    sql_string = """
+                    SELECT
+                        A.RR_NO,
+                        A.DATE_START AS FROM_TIME,
+                        CASE
+                            WHEN C.EQUIV_MODALITY IS NOT NULL
+                                THEN C.EQUIV_MODALITY
+                            ELSE
+                                A.TREATMENT_MODALITY
+                        END AS ADMITREASONCODE,
+                        A.TREATMENT_CENTRE AS HEALTHCAREFACILITYCODE,
+                        B.DATE_START AS TO_TIME,
+                        B.TREATMENT_MODALITY AS DISCHARGEREASONCODE,
+                        B.TREATMENT_CENTRE AS DISCHARGELOCATION
+                    FROM
+                    (
+                    SELECT
+                        RR_NO,
+                        DATE_START,
+                        DATE_END,
+                        YEAR_END_SEQ,
+                        TREATMENT_MODALITY,
+                        HOSP_CENTRE,
+                        TREATMENT_CENTRE,
+                        ROW_NUMBER() OVER (PARTITION BY RR_NO ORDER BY DATE_START ASC, YEAR_END_SEQ ASC) AS ROWNUMBER
+                    FROM
+                        TREATMENT
+                    WHERE
+                        RR_NO = :rr_no
+                    ) A
+                    LEFT JOIN
+                    (
+                    SELECT
+                        RR_NO,
+                        DATE_START,
+                        DATE_END,
+                        YEAR_END_SEQ,
+                        TREATMENT_MODALITY,
+                        HOSP_CENTRE,
+                        TREATMENT_CENTRE,
+                        ROW_NUMBER() OVER (PARTITION BY RR_NO ORDER BY DATE_START ASC, YEAR_END_SEQ ASC) AS ROWNUMBER
+                    FROM
+                        TREATMENT
+                    WHERE
+                        RR_NO = :rr_no
+                    ) B
+                        ON
+                            A.RR_NO = B.RR_NO AND
+                            A.ROWNUMBER = B.ROWNUMBER - 1 AND
+                            A.HOSP_CENTRE = B.HOSP_CENTRE
+                    LEFT JOIN MODALITY_CODES C ON C.REGISTRY_CODE = A.TREATMENT_MODALITY
+                    LEFT JOIN MODALITY_CODES D ON D.REGISTRY_CODE = B.TREATMENT_MODALITY
+                    WHERE
+                        A.RR_NO = :rr_no AND
+                        C.TRANSFER_OUT = 0 AND
+                        C.REGISTRY_CODE_TYPE <> 'X' AND
+                        A.HOSP_CENTRE = :hosp_centre
+                    ORDER BY
+                        A.RR_NO,
+                        A.DATE_START,
+                        A.YEAR_END_SEQ
+                    """
 
                 cursor = (
                     object_session(self)
@@ -271,9 +454,15 @@ class UKRR_Patient(Base):
                     if healthcarefacilitycode:
                         treatment.HealthCareFacility = ukrdc_schema.Location()
                         treatment.HealthCareFacility.Code = healthcarefacilitycode
-                        treatment.HealthCareFacility.CodingStandard = "ODS"
+                        treatment.HealthCareFacility.CodingStandard = "RR1+"
 
                     if admitreasoncode:
+
+                        # TODO: This needs an updated ukrdc_schema to fix a typo.
+                        # for now we'll use a more generic TX code.
+                        if admitreasoncode == "77":
+                            admitreasoncode = "23"
+
                         treatment.AdmitReason = ukrdc_schema.CF_RR7_TREATMENT()
                         treatment.AdmitReason.Code = admitreasoncode
                         treatment.AdmitReason.CodingStandard = "CF_RR7_TREATMENT"
@@ -343,7 +532,7 @@ class UKRR_Deleted_Patient(Base):
     chi_no = Column(Integer)
     hsc_no = Column(Integer)
     uktssa_no = Column(Integer)
-    
+
     local_hosp_no = Column(String)
 
     date_birth = Column(Date)
