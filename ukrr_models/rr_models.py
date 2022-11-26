@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import (
     Column,
     Date,
@@ -11,13 +13,11 @@ from sqlalchemy.orm.session import object_session
 
 import pyxb
 
-from ukrdc_schema import ukrdc_schema
-
-from ukrdc.services.utils import get_xml_datetime, customdate
-import uuid
-from ukrdc.services.ukrdc_models import NAMESPACE
 from rr.nhs import get_organization, OrganizationType, valid_number
 from ukrdc.services.exceptions import PatientIdentifierNotFoundError
+from ukrdc.services.ukrdc_models import NAMESPACE
+from ukrdc.services.utils import get_xml_datetime, customdate
+from ukrdc_schema import ukrdc_schema
 
 Base = declarative_base()
 
