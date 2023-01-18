@@ -161,8 +161,51 @@ class UKRR_Patient(Base):
         # Apparently the same with this.
         cursor.connection.commit()
 
-    def as_pyxb_xml(
-        self,
+class Patient_Demographics(Base):
+
+    __tablename__ = "patient_demog"
+
+    rr_no = Column(Integer, ForeignKey("patients.rr_no"), primary_key=True)
+    hosp_centre = Column(String, primary_key=True)
+
+    surname = Column(String)
+    forename = Column(String)
+    birth_name = Column(String)
+    alias_name = Column(String)
+    date_birth = Column(Date)
+    date_death = Column(Date)
+
+    nhs_no = Column("new_nhs_no", Integer)
+    chi_no = Column(Integer)
+    hsc_no = Column(Integer)
+    uktssa_no = Column(Integer)
+    local_hosp_no = Column(String)
+
+    first_seen_date = Column(Date)
+
+
+class UKRR_Deleted_Patient(Base):
+
+    __tablename__ = "deleted_patients"
+
+    rr_no = Column(Integer, primary_key=True)
+    surname = Column(String)
+    forename = Column(String)
+    sex = Column(String)
+
+    nhs_no = Column("new_nhs_no", Integer)
+    chi_no = Column(Integer)
+    hsc_no = Column(Integer)
+    uktssa_no = Column(Integer)
+
+    local_hosp_no = Column(String)
+
+    date_birth = Column(Date)
+    date_death = Column(Date)
+
+
+def as_pyxb_xml(
+        Patient: UKRR_Patient, 
         # If sending_facility is supplied we assume only
         # one set of data returned.
         sending_facility: str = "UKRR",
@@ -171,6 +214,7 @@ class UKRR_Patient(Base):
         treatment_cache: bool = False,
     ):
 
+        # Function split out from the main UKRR_patient class 
         # TODO: We need to handle Refused Consent Patients
 
         if sending_facility == "UKRR":
@@ -180,17 +224,18 @@ class UKRR_Patient(Base):
         patient_record.SendingFacility = sending_facility
         patient_record.SendingExtract = sending_extract
         patient_record.Patient = ukrdc_schema.Patient()
-        patient_record.Patient.BirthTime = get_xml_datetime(self.date_birth)
-        patient_record.Patient.DeathTime = get_xml_datetime(self.date_death)
+        print()
+        patient_record.Patient.BirthTime = get_xml_datetime(Patient.date_birth)
+        patient_record.Patient.DeathTime = get_xml_datetime(Patient.date_death)
 
-        if self.sex:
-            patient_record.Patient.Gender = self.sex
+        if Patient.sex:
+            patient_record.Patient.Gender = Patient.sex
 
         patient_record.Patient.PatientNumbers = pyxb.BIND()
 
         if sending_facility == "UKRR":
             xml_identifier = ukrdc_schema.PatientNumber()
-            xml_identifier.Number = str(self.rr_no)
+            xml_identifier.Number = str(Patient.rr_no)
             # TODO: This may not pass validation.
             # More significantly a value other than LOCALHOSP may
             # be a problem with the EMPI logic.
@@ -198,11 +243,11 @@ class UKRR_Patient(Base):
             xml_identifier.NumberType = "MRN"
             patient_record.Patient.PatientNumbers.append(xml_identifier)
 
-            surname = self.surname
-            forename = self.forename
+            surname = Patient.surname
+            forename = Patient.forename
 
         else:
-            patient_demographics = self.patient_demographics.filter(
+            patient_demographics = Patient.patient_demographics.filter(
                 Patient_Demographics.hosp_centre == sending_facility
             ).first()
 
@@ -217,7 +262,7 @@ class UKRR_Patient(Base):
                 xml_identifier.NumberType = "MRN"
                 patient_record.Patient.PatientNumbers.append(xml_identifier)
             else:
-                for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
+                for nhs_identifier in (Patient.nhs_no, Patient.chi_no, Patient.hsc_no):
                     organization = get_organization(nhs_identifier)
                     if organization == OrganizationType.UNK or not valid_number(
                         nhs_identifier, organization
@@ -234,15 +279,15 @@ class UKRR_Patient(Base):
                     # Once we've got one quit.
                     break
 
-                surname = self.surname
-                forename = self.forename
+                surname = Patient.surname
+                forename = Patient.forename
 
         patient_record.Patient.Names = pyxb.BIND(
             pyxb.BIND(use="L", Family=surname, Given=forename)
         )
 
         # National Identifiers
-        for nhs_identifier in (self.nhs_no, self.chi_no, self.hsc_no):
+        for nhs_identifier in (Patient.nhs_no, Patient.chi_no, Patient.hsc_no):
 
             if nhs_identifier:
                 xml_identifier = ukrdc_schema.PatientNumber()
@@ -262,7 +307,7 @@ class UKRR_Patient(Base):
 
         # RR National Identifier
         xml_identifier = ukrdc_schema.PatientNumber()
-        xml_identifier.Number = str(self.rr_no)
+        xml_identifier.Number = str(Patient.rr_no)
         xml_identifier.Organization = "UKRR"
         xml_identifier.NumberType = "NI"
 
@@ -273,7 +318,7 @@ class UKRR_Patient(Base):
             patient_record.ProgramMemberships = pyxb.BIND()
             xml_program_membership = ukrdc_schema.ProgramMembership()
             xml_program_membership.ProgramName = "UKRR"
-            reg_date, _ = get_xml_datetime(self.date_registered).split("T")
+            reg_date, _ = get_xml_datetime(Patient.date_registered).split("T")
             xml_program_membership.FromTime = customdate(reg_date)
             yhs_external_id = uuid.uuid5(NAMESPACE, str(nhs_identifier) + "UKRR").hex
             xml_program_membership.ExternalId = yhs_external_id
@@ -284,11 +329,11 @@ class UKRR_Patient(Base):
             # TODO: Extract the other stuff here
 
             # Ethnicity
-            if self.ethnicity:
-                if len(self.ethnicity) == 1:
+            if Patient.ethnicity:
+                if len(Patient.ethnicity) == 1:
                     # TODO: We need a conversion for the READ ethnicity codes
                     ethnicity = ukrdc_schema.EthnicGroup()
-                    ethnicity.Code = self.ethnicity
+                    ethnicity.Code = Patient.ethnicity
                     ethnicity.CodingStandard = "NHS_DATA_DICTIONARY"
                     patient_record.Patient.EthnicGroup = ethnicity
 
@@ -307,14 +352,14 @@ class UKRR_Patient(Base):
 
             patient_record.Diagnoses = pyxb.BIND()
 
-            if self.cod_edta1:
+            if Patient.cod_edta1:
                 cause_of_death = ukrdc_schema.CauseOfDeath()
                 diagnosis = ukrdc_schema.CF_EDTA_COD()
                 # TODO: The str() can be removed once the DB field is changed.
-                diagnosis.Code = str(self.cod_edta1)
+                diagnosis.Code = str(Patient.cod_edta1)
                 diagnosis.CodingStandard = "EDTA_COD"
                 cause_of_death.Diagnosis = diagnosis
-                cause_of_death.Description = self.cod_text
+                cause_of_death.Description = Patient.cod_text
 
                 patient_record.Diagnoses.append(cause_of_death)
 
@@ -322,10 +367,10 @@ class UKRR_Patient(Base):
 
             # Blood Type
             # TODO: Need to check UKRR codes match
-            if self.blood_group:
-                patient_record.Patient.BloodGroup = self.blood_group
-            if self.blood_rhesus:
-                patient_record.Patient.BloodRhesus = self.blood_rhesus
+            if Patient.blood_group:
+                patient_record.Patient.BloodGroup = Patient.blood_group
+            if Patient.blood_rhesus:
+                patient_record.Patient.BloodRhesus = Patient.blood_rhesus
 
             # TODO: Family Doctor
 
@@ -425,10 +470,10 @@ class UKRR_Patient(Base):
                     """
 
                 cursor = (
-                    object_session(self)
+                    object_session(Patient)
                     .execute(
                         sql_string,
-                        {"rr_no": self.rr_no, "hosp_centre": sending_facility},
+                        {"rr_no": Patient.rr_no, "hosp_centre": sending_facility},
                     )
                     .cursor
                 )
@@ -495,45 +540,3 @@ class UKRR_Patient(Base):
                 raise
         return patient_record.toDOM().toprettyxml()
 
-
-class Patient_Demographics(Base):
-
-    __tablename__ = "patient_demog"
-
-    rr_no = Column(Integer, ForeignKey("patients.rr_no"), primary_key=True)
-    hosp_centre = Column(String, primary_key=True)
-
-    surname = Column(String)
-    forename = Column(String)
-    birth_name = Column(String)
-    alias_name = Column(String)
-    date_birth = Column(Date)
-    date_death = Column(Date)
-
-    nhs_no = Column("new_nhs_no", Integer)
-    chi_no = Column(Integer)
-    hsc_no = Column(Integer)
-    uktssa_no = Column(Integer)
-    local_hosp_no = Column(String)
-
-    first_seen_date = Column(Date)
-
-
-class UKRR_Deleted_Patient(Base):
-
-    __tablename__ = "deleted_patients"
-
-    rr_no = Column(Integer, primary_key=True)
-    surname = Column(String)
-    forename = Column(String)
-    sex = Column(String)
-
-    nhs_no = Column("new_nhs_no", Integer)
-    chi_no = Column(Integer)
-    hsc_no = Column(Integer)
-    uktssa_no = Column(Integer)
-
-    local_hosp_no = Column(String)
-
-    date_birth = Column(Date)
-    date_death = Column(Date)
