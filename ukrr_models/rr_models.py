@@ -32,22 +32,27 @@ Base = declarative_base()
 QUA_OBSERVATION_ITEMS = [
     ("QUA40", "QUA01", "PRE", "Systolic BP"),
     ("QUA41", "QUA01", "PRE", "Diastolic BP"),
+    ("QUA42", "QUA01", None, "Weight"),
     ("QUA44", "QUA01", "POST", "Post-Systolic BP"),
     ("QUA45", "QUA01", "POST", "Post-Diastolic BP"),
 ]
 
 QUA_RESULT_ITEMS = [
+    ("QUA10", "QUA01", None, "Creatinine")
+    ("QUA11", "QUA01", None, "Urea")
+    ("QUA21", "QUA01", None, "Haemoglobin"),
+    ("QUA22", "QUA01", None, "Ferretin"),
+    ("QUA23", "QUA01", None, "Albumin"),
+    ("QUA24", "QUA01", None, "HbA1c"),
+    ("QUA25", "QUA01", None, "Aluminium"),
+    ("QUA26", "QUA01", None, "Cholesterol"),
     ("QUA27", "QUA01", None, "Parathyroid Hormone"),
+    ("QUA30", "QUA01", None, "Uncorrected Calcium"),
     ("QUA31", "QUA01", None, "Corrected Calcium"),
     ("QUA32", "QUA01", None, "Phosphate"),
-    # No Potassium ?
-    ("QUA50", "QUA01", None, "Urea Reduction Ratio"),
-    # No kt/v ?
-    ("QUA21", "QUA01", None, "Haemoglobin"),
-    ("QUA23", "QUA01", None, "Albumin"),
+    ("QUA33", "QUA01", None, "Bicarbonate"),
     ("QUA34", "QUA01", None, "Sodium"),
-    # No Alkaline Phosphatase ?
-    # No 25-Hydroxyvitamin D ?
+    ("QUA50", "QUA01", None, "Urea Reduction Ratio"),
 ]
 
 QBL_RESULT_ITEMS = [
