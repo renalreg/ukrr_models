@@ -50,6 +50,22 @@ QUA_RESULT_ITEMS = [
     # No 25-Hydroxyvitamin D ?
 ]
 
+QBL_RESULT_ITEMS = [
+    ("QBLB9", "QBLBA", None, "Parathyroid Hormone"),
+    ("QBLB3", "QBLBB", None, "Calcium"),
+    ("QBLB4", "QBLBC", None, "Corrected Calcium"),
+    ("QBLB1", "QBLB2", None, "Phosphate"),
+    ("QBLA9", "QBLAA", None, "Potassium"),
+    ("QBLG9", "QBLGA", None, "Urea Reduction Ratio"),
+    ("QBLGG", "QBLGH", None, "KT/V"),
+    ("QBLE1", "QBLEB", None, "Haemoglobin"),
+    ("QBLB7", "QBLB8", None, "Albumin"),
+    ("QBLA6", "QBLA7", None, "Sodium"),
+    ("QBLB5", "QBLB6", None, "Alkaline Phosphatase"),
+    # No 25-Hydroxyvitamin D ?
+]
+
+
 
 class UKRR_Patient(Base):
 
@@ -246,19 +262,11 @@ def get_data_definition(cursor):
     return data_definition
 
 
-def get_observations(patient_record, cursor, data_definition, rr_no):
+def get_observations(cursor, data_definition, rr_no)->list:
     # function to get observations and append them to the patient record. 
     
-
-    observations_node = False
-
-
+    observations = []
     for value_item, date_item, prepost, description in QUA_OBSERVATION_ITEMS:
-
-        if not observations_node:
-            patient_record.Observations = pyxb.BIND()
-            observations_node = True
-
 
         sql_string = (
             """
@@ -281,8 +289,6 @@ def get_observations(patient_record, cursor, data_definition, rr_no):
                 RR_NO = ?"""
             )
 
-        print(sql_string)
-
         cursor.execute(sql_string, (rr_no,))
         results = cursor.fetchall()
 
@@ -296,11 +302,107 @@ def get_observations(patient_record, cursor, data_definition, rr_no):
             xml_observation.ObservationValue = str(row[0])
             xml_observation.PrePost = prepost
 
-            patient_record.Observations.append(xml_observation)
+            observations.append(xml_observation)
 
-    return
+    return observations
 
-def get_transplants(patient_record, cursor, facility, rr_no):
+def get_laborders(cursor, data_definition, rr_no)->list:
+
+    sql_string = """
+    SELECT *
+    FROM
+        QUARTERLY_TREATMENT
+    WHERE
+        RR_NO = ?
+    """
+
+    cursor.execute(sql_string, (rr_no,))
+    columns = [column[0] for column in cursor.description]
+    results = []
+    for row in cursor.fetchall():
+        results.append(dict(zip(columns, row)))
+
+    lab_orders = []
+    if len(results) > 0:
+        for row in results:
+            xml_laborder = ukrdc_schema.LabOrder()
+            xml_laborder.PlacerId = "XXX"
+            xml_laborder.ReceivingLocation = ukrdc_schema.Location()
+            xml_laborder.ReceivingLocation.Code = row["HOSP_CENTRE"]
+            xml_laborder.OrderItem = ukrdc_schema.CodedField()
+            xml_laborder.OrderItem.Code = "QUA"
+            xml_laborder.OrderItem.CodingStandard = "UKRR"
+            xml_laborder.SpecimenCollectedTime = row["DATE_END"]
+
+            xml_laborder.ResultItems = ukrdc_schema.ResultItems()
+
+            for value_item, date_item, prepost, description in QUA_RESULT_ITEMS:
+                value_field = data_definition[value_item]
+                date_field = data_definition[date_item]
+
+                if row[value_field]:
+                    xml_resultitem = ukrdc_schema.ResultItem()
+                    xml_resultitem.PrePost = prepost
+                    xml_resultitem.ServiceId = ukrdc_schema.ServiceId()
+                    xml_resultitem.ServiceId.CodingStandard = "UKRR"
+                    xml_resultitem.ServiceId.Code = value_item
+                    xml_resultitem.ServiceId.Description = description
+                    xml_resultitem.ResultValue = str(row[value_field])
+                    xml_resultitem.ObservationTime = row[date_field]
+
+                    xml_laborder.ResultItems.append(xml_resultitem)
+
+            lab_orders.append(xml_laborder)
+
+    sql_string = """
+    SELECT *
+    FROM
+        MONTHLY_TREATMENT
+    WHERE
+        RR_NO = ?
+    """
+
+    cursor.execute(sql_string, (rr_no,))
+    columns = [column[0] for column in cursor.description]
+    results = []
+    for row in cursor.fetchall():
+        results.append(dict(zip(columns, row)))
+
+
+    if len(results) > 0 and not lab_orders:
+        for row in results:
+            xml_laborder = ukrdc_schema.LabOrder()
+            xml_laborder.PlacerId = "XXX"
+            xml_laborder.ReceivingLocation = ukrdc_schema.Location()
+            xml_laborder.ReceivingLocation.Code = row["HOSP_CENTRE"]
+            xml_laborder.OrderItem = ukrdc_schema.CodedField()
+            xml_laborder.OrderItem.Code = "QBL"
+            xml_laborder.OrderItem.CodingStandard = "UKRR"
+            xml_laborder.SpecimenCollectedTime = row["DATE_END"]
+
+            xml_laborder.ResultItems = ukrdc_schema.ResultItems()
+
+            for value_item, date_item, prepost, description in QBL_RESULT_ITEMS:
+                value_field = data_definition[value_item]
+                date_field = data_definition[date_item]
+
+                if row[value_field]:
+                    xml_resultitem = ukrdc_schema.ResultItem()
+                    xml_resultitem.PrePost = prepost
+                    xml_resultitem.ServiceId = ukrdc_schema.ServiceId()
+                    xml_resultitem.ServiceId.CodingStandard = "UKRR"
+                    xml_resultitem.ServiceId.Code = value_item
+                    xml_resultitem.ServiceId.Description = description
+                    xml_resultitem.ResultValue = row[value_field]
+                    xml_resultitem.ObservationTime = row[date_field]
+
+                    xml_laborder.ResultItems.append(xml_resultitem)
+
+            lab_orders.append(xml_laborder)
+    return lab_orders
+
+
+def get_transplants(cursor, facility, rr_no)->list:
 
     # NHS B&T Transplants (Waiting List)
     sqlstring = """
@@ -324,11 +426,7 @@ def get_transplants(patient_record, cursor, facility, rr_no):
     results = cursor.fetchall()
 
     # line removed because I don't really understand how it fits in
-    """
-    if len(results) > 0 and self.encounters_node is False:
-        self.xml_patient_record.Encounters = pyxb.BIND()
-        self.encounters_node = True
-    """
+    transplants = []
     for row in results:
         transplant_list = ukrdc_schema.TransplantList()
         transplant_list.EncounterNumber = row[3]
@@ -345,8 +443,8 @@ def get_transplants(patient_record, cursor, facility, rr_no):
         discharge_reason.Code = row[6]
         transplant_list.DischargeReason = discharge_reason
 
-        patient_record.Encounters.append(transplant_list)
-    return
+        transplants.append(transplant_list)
+    return transplants
 
 
 def as_pyxb_xml(
@@ -357,16 +455,23 @@ def as_pyxb_xml(
         sending_extract: str = "UKRR",
         full_patient_record: bool = True,
         treatment_cache: bool = False,
+        transplant: bool = False
     ):
 
         # Function split out from the main UKRR_patient class 
         # TODO: We need to handle Refused Consent Patients
 
-    if sending_facility == "UKRR":
+
+    if sending_facility == "UKRR" :
         full_patient_record = False
 
     patient_record = ukrdc_schema.PatientRecord()
-    patient_record.SendingFacility = sending_facility
+    if transplant:
+        patient_record.SendingFacility = "NHSBT"
+    else:
+        patient_record.SendingFacility = sending_facility 
+
+    
     patient_record.SendingExtract = sending_extract
     patient_record.Patient = ukrdc_schema.Patient()
     print()
@@ -378,6 +483,7 @@ def as_pyxb_xml(
 
     patient_record.Patient.PatientNumbers = pyxb.BIND()
 
+    # create 
     if sending_facility == "UKRR":
         xml_identifier = ukrdc_schema.PatientNumber()
         xml_identifier.Number = str(Patient.rr_no)
@@ -682,10 +788,38 @@ def as_pyxb_xml(
 
                 patient_record.Encounters.append(treatment)
 
-            #  Add observations  
-            get_observations(patient_record, cursor, get_data_definition(cursor) ,Patient.rr_no)
+            data_definition = get_data_definition(cursor)
+
+            #  Add observations
+            observations = get_observations(cursor, data_definition, Patient.rr_no)
+            if observations: 
+                patient_record.Observations = pyxb.BIND()
+                for observation in observations:
+                    patient_record.Observations.append(observation)
+
+            # Add lab orders/results 
+            lab_orders = get_laborders(cursor, data_definition, Patient.rr_no)
+            if lab_orders: 
+                patient_record.LabOrders = pyxb.BIND()
+                for order in lab_orders:
+                    patient_record.LabOrders.append(order)
+            
+                
+        
         except Exception:
             raise
+
+        if transplant:
+            """
+            include transplants
+            """
+            transplants = get_transplants(cursor, sending_facility, Patient.rr_no)
+            if transplants:
+                if not patient_record.Encounters:
+                    patient_record.Encounters = pyxb.BIND()
+                for tran in transplants:
+                    patient_record.Encounters.append(tran)
+
     return patient_record.toDOM().toprettyxml()
 
 
