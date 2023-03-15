@@ -16,6 +16,8 @@ class UKT_Patient(Base):
     Sex = Column('sex', String)
     Post_Code = Column('post_code', String)
     New_NHS_No = Column('new_nhs_no', Integer)
+    CHI_NO = Column('chi_no', Integer)
+    HSC_NO = Column('hsc_no', Integer)
     RR_No = Column('rr_no', Integer)
     UKT_Date_Death = Column('ukt_date_death', Date)
     UKT_Date_Birth = Column('ukt_date_birth', Date)
