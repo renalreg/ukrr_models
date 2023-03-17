@@ -15,7 +15,7 @@ test_deps = [
 
 setup(
     name="ukrr_models",
-    version="0.0.2",
+    version="0.0.3",
     author="UK Renal Registry",
     author_email="rrsystems@renalregistry.nhs.uk",
     url="https://www.renalreg.org/",
