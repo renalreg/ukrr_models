@@ -10,17 +10,23 @@ class UKT_Patient(Base):
     __tablename__ = 'ukt_patients'
 
     # Note - SQLAlchemy sends 'proper case' items to Oracle in speech marks implying Case Sensitivity - which then doesn't match.
-    UKTSSA_No = Column('uktssa_no', Integer, primary_key=True, doc='Test', info={'Test': 'Blick'}, autoincrement=False)
-    Surname = Column('surname', String)
-    Forename = Column('forename', String)
-    Sex = Column('sex', String)
-    Post_Code = Column('post_code', String)
-    New_NHS_No = Column('new_nhs_no', Integer)
-    CHI_NO = Column('chi_no', Integer)
-    HSC_NO = Column('hsc_no', Integer)
-    RR_No = Column('rr_no', Integer)
-    UKT_Date_Death = Column('ukt_date_death', Date)
-    UKT_Date_Birth = Column('ukt_date_birth', Date)
+    uktssa_no = Column(
+        Integer,
+        primary_key=True,
+        doc="Test",
+        info={"Test": "Blick"},
+        autoincrement=False,
+    )
+    surname = Column(String)
+    forename = Column(String)
+    sex = Column(String)
+    post_code = Column(String)
+    new_nhs_no = Column(Integer)
+    chi_no = Column(Integer)
+    hsc_no = Column(Integer)
+    rr_no = Column(Integer)
+    ukt_date_death = Column(Date)
+    ukt_date_birth = Column(Date)
 
 
 class UKT_Transplant(Base):
