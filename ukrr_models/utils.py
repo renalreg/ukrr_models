@@ -6,12 +6,14 @@ from sqlalchemy.orm.session import object_session
 
 
 from rr.nhs import get_organization, OrganizationType, valid_number
-from ukrdc.services.exceptions import PatientIdentifierNotFoundError
-from ukrdc.services.ukrdc_models import NAMESPACE
-from ukrdc.services.utils import get_xml_datetime, customdate
+#from ukrdc.services.exceptions import PatientIdentifierNotFoundError
+#from ukrdc.services.ukrdc_models import NAMESPACE
+#from ukrdc.services.utils import customdate, 
 from ukrdc_schema import ukrdc_schema
-from ukrr_models.rr_models import Patient_Demographics, UKRR_Patient
+from ukrr_models.rr_models import Patient_Demographics, UKRRPatient
+from ukrdc.database.utils import get_xml_datetime
 
+NAMESPACE = uuid.UUID("59508627-0d06-44f5-bc32-ab5ff14de653")
 
 # Historic Note.
 # "SQLAlchemy sends 'proper case' items to Oracle in speech
@@ -30,9 +32,9 @@ QUA_OBSERVATION_ITEMS = [
 ]
 
 QUA_RESULT_ITEMS = [
-    ("QUA10", "QUA01", None, "Creatinine")("QUA11", "QUA01", None, "Urea")(
-        "QUA21", "QUA01", None, "Haemoglobin"
-    ),
+    ("QUA10", "QUA01", None, "Creatinine"),
+    ("QUA11", "QUA01", None, "Urea"),
+    ( "QUA21", "QUA01", None, "Haemoglobin"),
     ("QUA22", "QUA01", None, "Ferretin"),
     ("QUA23", "QUA01", None, "Albumin"),
     ("QUA24", "QUA01", None, "HbA1c"),
@@ -62,6 +64,9 @@ QBL_RESULT_ITEMS = [
     # No 25-Hydroxyvitamin D ?
 ]
 
+def custom_date(datetime):
+    print(datetime)
+    return get_xml_datetime(datetime)
 
 def create_temp_treatments(cursor):
     try:
@@ -354,7 +359,7 @@ def get_transplants(cursor, facility, rr_no) -> list:
 
 
 def as_pyxb_xml(
-    Patient: UKRR_Patient,
+    Patient: UKRRPatient,
     # If sending_facility is supplied we assume only
     # one set of data returned.
     sending_facility: str = "UKRR",
@@ -440,6 +445,8 @@ def as_pyxb_xml(
         pyxb.BIND(use="L", Family=surname, Given=forename)
     )
 
+
+
     # National Identifiers
     for nhs_identifier in (Patient.nhs_no, Patient.chi_no, Patient.hsc_no):
         if nhs_identifier:
@@ -451,7 +458,7 @@ def as_pyxb_xml(
             if organization == OrganizationType.UNK or not valid_number(
                 nhs_identifier, organization
             ):
-                raise PatientIdentifierNotFoundError("Invalid NHS Number Supplied")
+                raise Exception("Invalid NHS Number Supplied")
 
             xml_identifier.Organization = organization.name
             xml_identifier.NumberType = "NI"

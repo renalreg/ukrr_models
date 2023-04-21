@@ -13,7 +13,7 @@ Base = declarative_base(metadata=metadata)
 class UKTPatient(Base):
     __tablename__ = "ukt_patients"
 
-    # Note - SQLAlchemy sends 'proper case' items to Oracle in speech marks implying Case 
+    # Note - SQLAlchemy sends 'proper case' items to Oracle in speech marks implying Case
     # Sensitivity - which then doesn't match.
     uktssa_no = Column(
         Integer,

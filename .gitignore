@@ -1,5 +1,6 @@
 /ukrr_models.egg-info
 /ukrr_models/__pycache__
+/output
 
 .tox
 .venv
