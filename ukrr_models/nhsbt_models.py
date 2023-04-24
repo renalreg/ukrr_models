@@ -1,15 +1,20 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date
+""" SQLAlchemy models for NHSBT
+"""
 
-Base = declarative_base()
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Date, MetaData
+
+metadata = MetaData()
+Base = declarative_base(metadata=metadata)
 
 # http://docs.sqlalchemy.org/en/latest/dialects/oracle.html#identifier-casing
 
 
-class UKT_Patient(Base):
-    __tablename__ = 'ukt_patients'
+class UKTPatient(Base):
+    __tablename__ = "ukt_patients"
 
-    # Note - SQLAlchemy sends 'proper case' items to Oracle in speech marks implying Case Sensitivity - which then doesn't match.
+    # Note - SQLAlchemy sends 'proper case' items to Oracle in speech marks implying Case
+    # Sensitivity - which then doesn't match.
     uktssa_no = Column(
         Integer,
         primary_key=True,
@@ -29,8 +34,8 @@ class UKT_Patient(Base):
     ukt_date_birth = Column(Date)
 
 
-class UKT_Transplant(Base):
-    __tablename__ = 'ukt_transplants'
+class UKTTransplant(Base):
+    __tablename__ = "ukt_transplants"
 
     transplant_id = Column(Integer)
     uktssa_no = Column(Integer)
