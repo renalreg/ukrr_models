@@ -2,60 +2,50 @@
 """
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, MetaData
+from sqlalchemy import Column, Integer, String, DateTime, MetaData, Boolean
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
-
-# http://docs.sqlalchemy.org/en/latest/dialects/oracle.html#identifier-casing
 
 
 class UKTPatient(Base):
     __tablename__ = "ukt_patients"
 
-    # Note - SQLAlchemy sends 'proper case' items to Oracle in speech marks implying Case
-    # Sensitivity - which then doesn't match.
-    uktssa_no = Column(
-        Integer,
-        primary_key=True,
-        doc="Test",
-        info={"Test": "Blick"},
-        autoincrement=False,
-    )
-    surname = Column(String)
-    forename = Column(String)
-    sex = Column(String)
-    post_code = Column(String)
+    uktssa_no = Column(Integer, primary_key=True, autoincrement=False)
+    surname = Column(String(50))
+    forename = Column(String(50))
+    sex = Column(String(1))
+    post_code = Column(String(10))
     new_nhs_no = Column(Integer)
     chi_no = Column(Integer)
     hsc_no = Column(Integer)
     rr_no = Column(Integer)
-    ukt_date_death = Column(Date)
-    ukt_date_birth = Column(Date)
+    ukt_date_death = Column(DateTime)
+    ukt_date_birth = Column(DateTime)
 
 
 class UKTTransplant(Base):
     __tablename__ = "ukt_transplants"
 
-    transplant_id = Column(Integer)
+    registration_id = Column(String(12), primary_key=True)
     uktssa_no = Column(Integer)
-    transplant_date = Column(Date)
-    transplant_type = Column(String)
-    transplant_organ = Column(String)
-    transplant_unit = Column(String)
-    ukt_fail_date = Column(Date)
+    transplant_id = Column(Integer)
+    transplant_type = Column(String(10))
+    transplant_organ = Column(String(50))
+    transplant_unit = Column(String(50))
     rr_no = Column(Integer)
-    registration_id = Column(String, primary_key=True)
-    registration_date = Column(Date)
-    registration_date_type = Column(String)
-    registration_end_date = Column(Date)
-    registration_end_status = Column(String)
-    transplant_consideration = Column(String)
-    transplant_dialysis = Column(String)
-    transplant_relationship = Column(String)
-    transplant_sex = Column(String)
-    cause_of_failure = Column(String)
-    cause_of_failure_text = Column(String)
-    cit_mins = Column(String)
-    hla_mismatch = Column(String)
-    ukt_suspension = Column(String)
+    transplant_date = Column(DateTime)
+    ukt_fail_date = Column(DateTime)
+    registration_date = Column(DateTime)
+    registration_date_type = Column(String(12))
+    registration_end_date = Column(DateTime)
+    registration_end_status = Column(String(12))
+    transplant_consideration = Column(String(20))
+    transplant_dialysis = Column(String(12))
+    transplant_relationship = Column(String(20))
+    transplant_sex = Column(String(12))
+    cause_of_failure = Column(String(10))
+    cause_of_failure_text = Column(String(500))
+    cit_mins = Column(String(10))
+    hla_mismatch = Column(String(10))
+    ukt_suspension = Column(Boolean)
