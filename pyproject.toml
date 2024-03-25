@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ukrr-models"
-version = "1.0.0"
+version = "0.1.0"
 description = "Models of the UKRR database"
 authors = ["UK Renal Registry"]
 license = "MIT"
