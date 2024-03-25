@@ -1,18 +1,9 @@
-from sqlalchemy import (
-    Column,
-    Date,
-    ForeignKey,
-    Integer,
-    String,
-    MetaData
-)
+from sqlalchemy import Column, Date, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Mapped
-
-
-
+from sqlalchemy.orm import Mapped, relationship
 
 Base = declarative_base()
+
 
 class UKRRPatient(Base):
     __tablename__ = "patients"
@@ -52,9 +43,10 @@ class UKRRPatient(Base):
 
     first_seen_date = Column(Date)
 
-    patient_demographics : Mapped[Integer] = relationship(
+    patient_demographics: Mapped[Integer] = relationship(
         "Patient_Demographics", backref="patient", lazy="dynamic"
     )
+
 
 class Patient_Demographics(Base):
     __tablename__ = "patient_demog"

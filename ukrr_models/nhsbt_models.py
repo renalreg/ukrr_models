@@ -1,5 +1,4 @@
-""" SQLAlchemy models for NHSBT
-"""
+"""SQLAlchemy models for NHSBT"""
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, MetaData, Boolean
