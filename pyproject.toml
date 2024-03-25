@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ukrr-models"
-version = "1.1.0"
+version = "1.0.0"
 description = "Models of the UKRR database"
 authors = ["UK Renal Registry"]
 license = "MIT"
@@ -27,4 +27,12 @@ build-backend = "poetry.core.masonry.api"
 plugins = "sqlalchemy.ext.mypy.plugin"
 
 [tool.bandit]
-exclude_dirs = ["tests", ".vscode", ".tox", ".ruff_cache", ".pytest_cache", ".mypy_cache", "dist"]
+exclude_dirs = [
+    "tests",
+    ".vscode",
+    ".tox",
+    ".ruff_cache",
+    ".pytest_cache",
+    ".mypy_cache",
+    "dist",
+]
