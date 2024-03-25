@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/renalreg/ukrr_models/compare/v0.1.0...v1.0.0) (2024-03-25)
+
+
+### Miscellaneous Chores
+
+* release 1.0.0 ([b5d9695](https://github.com/renalreg/ukrr_models/commit/b5d96954b8cadfa7cb1d4ce0a381dfe8ba265257))
+
 ## 0.1.0 (2024-03-25)
 
 
