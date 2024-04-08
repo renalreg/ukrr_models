@@ -30,9 +30,12 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Renal Registry - [@UKKidney](https://twitter.com/@UKKidney) - rrsystems@renalregistry.nhs.uk
+Renal Registry 
+* Website - [The UK Kidney Association](https://ukkidney.org/)
+* X - [@UKKidney](https://twitter.com/@UKKidney)
+* E-mail -  rrsystems@renalregistry.nhs.uk
 
-Project Link: [https://github.com/renalreg/ukrr_models](https://github.com/renalreg/rr-connection-manager)
+Project Link - [https://github.com/renalreg/ukrr_models](https://github.com/renalreg/ukrr_models)
 
 <br />
 

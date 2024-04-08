@@ -3,7 +3,7 @@ name: Conventional PR Title
 on:
   pull_request:
     branches:
-      - master
+      - main
 
   workflow_dispatch:
 
