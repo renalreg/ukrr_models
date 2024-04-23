@@ -22,21 +22,8 @@ jobs:
           app_id: ${{ secrets.REN_APP_ID }}
           private_key: ${{ secrets.REN_APP_KEY }}
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v8
-
-      - name: Extract Package Name
-        id: extract_package_name
-        run: |
-          PACKAGE_NAME=$(poetry version | cut -d ' ' -f 1)
-          echo "package_name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
-
       - name: Release Please
-        uses: google-github-actions/release-please-action@v3
+        uses: google-github-actions/release-please-action@v4
         with:
           release-type: python
-          package-name: ${{ steps.extract_package_name.outputs.package_name }}
           token: ${{ steps.generate-token.outputs.token }}
