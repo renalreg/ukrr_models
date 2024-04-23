@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.0](https://github.com/renalreg/ukrr_models/compare/v2.0.2...v2.1.0) (2024-04-23)
+
+
+### Features
+
+* automate publish ([29fc5a0](https://github.com/renalreg/ukrr_models/commit/29fc5a0d7a33dd54c4dc668b64faa3f5cf7421ad))
+* upgrade release please to v4 ([8f18738](https://github.com/renalreg/ukrr_models/commit/8f18738d10b21a7f5a3ed5429cf3afbcbd8e8a6e))
+
 ## [2.0.2](https://github.com/renalreg/ukrr_models/compare/v2.0.1...v2.0.2) (2024-04-23)
 
 
