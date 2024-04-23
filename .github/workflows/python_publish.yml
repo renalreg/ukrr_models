@@ -29,7 +29,7 @@ jobs:
         uses: convictional/trigger-workflow-and-wait@v1.6.1
         with:
           owner: renalreg
-          repo: radar-models
+          repo: ukrr_models
           github_token: ${{ steps.generate-token.outputs.token }}
           workflow_file_name: python_test.yml
 
