@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/renalreg/ukrr_models/compare/v2.1.0...v2.1.1) (2024-04-23)
+
+
+### Bug Fixes
+
+* :bug: Fixed bad TODO ([65d8051](https://github.com/renalreg/ukrr_models/commit/65d8051e5d243b9efaa588499e6726a6009fb130))
+
 ## [2.1.0](https://github.com/renalreg/ukrr_models/compare/v2.0.2...v2.1.0) (2024-04-23)
 
 
