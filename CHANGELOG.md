@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/renalreg/ukrr_models/compare/v2.0.0...v2.0.1) (2024-04-23)
+
+
+### Bug Fixes
+
+* :bug: fix publish action ([81907da](https://github.com/renalreg/ukrr_models/commit/81907dacda029bb6af54a2b097ac893640f16276))
+
 ## [2.0.0](https://github.com/renalreg/ukrr_models/compare/v1.0.0...v2.0.0) (2024-04-23)
 
 
