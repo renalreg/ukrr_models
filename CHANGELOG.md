@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/renalreg/ukrr_models/compare/v1.0.0...v2.0.0) (2024-04-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* :zap: Bump SQLAlchemy version
+
+### Features
+
+* :zap: Bump SQLAlchemy version ([666d34d](https://github.com/renalreg/ukrr_models/commit/666d34d714e5e0be25c7e7a29a2bde7cc8edf184))
+
 ## [1.0.0](https://github.com/renalreg/ukrr_models/compare/v0.1.0...v1.0.0) (2024-03-25)
 
 
