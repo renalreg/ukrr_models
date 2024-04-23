@@ -32,7 +32,7 @@ class UKRRPatient(Base):
     blood_rhesus = Column("blood_group_rhesus", String)
 
     cod_read = Column(String)
-    # TODO: These should be updated to String in the DB.
+    # TODO: [GIT-18] These should be updated to String in the DB.
     cod_edta1 = Column(Integer)
     cod_edta2 = Column(Integer)
     cod_text = Column(String)
