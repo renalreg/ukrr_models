@@ -49,8 +49,9 @@ class UKTTransplant(Base):
     hla_mismatch = Column(String(10))
     ukt_suspension = Column(Boolean)
 
+
 class UKTSites(Base):
-    __tablename__ = 'ukt_sites'
+    __tablename__ = "ukt_sites"
 
     site_name = Column(String(50), primary_key=True)
     rr_code = Column(String(8))
