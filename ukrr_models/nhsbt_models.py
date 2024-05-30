@@ -52,5 +52,5 @@ class UKTTransplant(Base):
 class UKTSites(Base):
     __tablename__ = 'ukt_sites'
 
-    SITE_NAME = Column(String(50), primary_key=True)
-    RR_CODE = Column(String(8))
+    site_name = Column(String(50), primary_key=True)
+    rr_code = Column(String(8))
