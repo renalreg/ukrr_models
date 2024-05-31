@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/renalreg/ukrr_models/compare/v2.1.1...v2.2.0) (2024-05-31)
+
+
+### Features
+
+* **models:** :sparkles: added models for UKTSites ([97341dc](https://github.com/renalreg/ukrr_models/commit/97341dce72bdeb3d9e76c5693dddfaa5263eff8d))
+
 ## [2.1.1](https://github.com/renalreg/ukrr_models/compare/v2.1.0...v2.1.1) (2024-04-23)
 
 
