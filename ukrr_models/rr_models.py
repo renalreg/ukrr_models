@@ -43,8 +43,8 @@ class UKRRPatient(Base):
 
     first_seen_date = Column(Date)
 
-    patient_demographics: Mapped[Integer] = relationship(
-        "Patient_Demographics", backref="patient", lazy="dynamic"
+    patient_demographics: Mapped["Patient_Demographics"] = relationship(
+        "Patient_Demographics", back_populates="ukrr_patient"
     )
 
 
@@ -68,6 +68,10 @@ class Patient_Demographics(Base):
     local_hosp_no = Column(String)
 
     first_seen_date = Column(Date)
+
+    ukrr_patient: Mapped["UKRRPatient"] = relationship(
+        "UKRRPatient", back_populates="patient_demographics"
+    )
 
 
 class UKRR_Deleted_Patient(Base):
