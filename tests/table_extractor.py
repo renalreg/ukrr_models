@@ -21,3 +21,23 @@ class TableNameExtractor(ast.NodeVisitor):
         ):
             self.table_names.append(table_name)
         self.generic_visit(node)
+
+    def visit_Assign(self, node):
+        if (
+            hasattr(node, "value")
+            and hasattr(node.value, "args")
+            and hasattr(node.value, "func")
+            and hasattr(node.value.func, "id")
+        ):
+            if table_name := next(
+                (
+                    arg.s
+                    for arg in node.value.args
+                    if isinstance(node.value, ast.Call)
+                    and isinstance(node.value.args, ast.Constant)
+                    and node.value.func.id == "Table"
+                ),
+                None,
+            ):
+                self.table_names.append(table_name)
+        self.generic_visit(node)

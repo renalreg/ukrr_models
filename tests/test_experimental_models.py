@@ -3,7 +3,7 @@ import ast
 from sqlalchemy import create_mock_engine
 from sqlalchemy.sql.type_api import TypeEngine
 
-from ukrr_models.nhsbt_models import Base
+from ukrr_models.experimental_models import Base
 from tests.table_extractor import TableNameExtractor
 
 
@@ -15,7 +15,7 @@ def mssql_dump(sql: TypeEngine, *args, **kwargs):
 
 mssql_engine = create_mock_engine("mssql+pyodbc://", mssql_dump)
 
-with open("./ukrr_models/nhsbt_models.py", "r") as file:
+with open("./ukrr_models/experimental_models.py", "r") as file:
     code = file.read()
 
 tree = ast.parse(code)

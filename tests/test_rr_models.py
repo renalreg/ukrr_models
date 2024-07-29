@@ -27,4 +27,7 @@ def test_create_tables(capsys):
     Base.metadata.create_all(bind=mssql_engine, checkfirst=False)
     captured = capsys.readouterr()
     for table in table_name_extractor.table_names:
-        assert f"CREATE TABLE {table}" in captured.out
+        assert (
+            f"CREATE TABLE {table}" in captured.out
+            or f"CREATE TABLE [{table}]" in captured.out
+        )
