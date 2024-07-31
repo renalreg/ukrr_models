@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.0](https://github.com/renalreg/ukrr_models/compare/v2.2.1...v2.3.0) (2024-07-31)
+
+
+### Features
+
+* Add a full set of models for the renalreg DB ([#23](https://github.com/renalreg/ukrr_models/issues/23)) ([d8dc385](https://github.com/renalreg/ukrr_models/commit/d8dc385a9661115ee70929b5c90be0ef61fb6f3d))
+* add quarterly_treatment table ([#24](https://github.com/renalreg/ukrr_models/issues/24)) ([df76307](https://github.com/renalreg/ukrr_models/commit/df76307ee8744310179589e13a4e05e333f5509f))
+
 ## [2.2.0](https://github.com/renalreg/ukrr_models/compare/v2.1.1...v2.2.0) (2024-05-31)
 
 
