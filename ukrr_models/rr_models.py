@@ -47,6 +47,8 @@ class UKRRPatient(Base):
         "Patient_Demographics", back_populates="ukrr_patient"
     )
 
+    opt_out_flag = Column(String)
+
 
 class Patient_Demographics(Base):
     __tablename__ = "patient_demog"
