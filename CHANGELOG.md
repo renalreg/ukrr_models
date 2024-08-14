@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/renalreg/ukrr_models/compare/v2.3.0...v2.4.0) (2024-08-14)
+
+
+### Features
+
+* Added opt out flag to patient model ([#26](https://github.com/renalreg/ukrr_models/issues/26)) ([8fc38b2](https://github.com/renalreg/ukrr_models/commit/8fc38b2bd5a196bc351a01aef2326ce1ba28f95e))
+
 ## [2.3.0](https://github.com/renalreg/ukrr_models/compare/v2.2.1...v2.3.0) (2024-07-31)
 
 
