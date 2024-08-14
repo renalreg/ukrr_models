@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/renalreg/ukrr_models/compare/v2.4.0...v2.4.1) (2024-08-14)
+
+
+### Bug Fixes
+
+* Change the relastionship decleration ([#28](https://github.com/renalreg/ukrr_models/issues/28)) ([b2d1fed](https://github.com/renalreg/ukrr_models/commit/b2d1fed88a28535e1de2b0e6a0d2afc2dd6be1d0))
+
 ## [2.4.0](https://github.com/renalreg/ukrr_models/compare/v2.3.0...v2.4.0) (2024-08-14)
 
 
