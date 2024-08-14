@@ -2,6 +2,8 @@ from sqlalchemy import Column, Date, ForeignKey, Integer, String, DateTime, Nume
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship
 
+from typing import List
+
 Base = declarative_base()
 
 
@@ -43,8 +45,8 @@ class UKRRPatient(Base):
 
     first_seen_date = Column(Date)
 
-    patient_demographics: Mapped["Patient_Demographics"] = relationship(
-        "Patient_Demographics", back_populates="ukrr_patient"
+    patient_demographics: Mapped[List["Patient_Demographics"]] = relationship(
+        back_populates="ukrr_patient"
     )
 
 
@@ -70,7 +72,7 @@ class Patient_Demographics(Base):
     first_seen_date = Column(Date)
 
     ukrr_patient: Mapped["UKRRPatient"] = relationship(
-        "UKRRPatient", back_populates="patient_demographics"
+        back_populates="patient_demographics"
     )
 
 
