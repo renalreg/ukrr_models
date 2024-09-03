@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/renalreg/ukrr_models/compare/v2.4.1...v2.4.2) (2024-09-03)
+
+
+### Bug Fixes
+
+* Corrected spelling mistake in alkaline_phosphatase ([#30](https://github.com/renalreg/ukrr_models/issues/30)) ([0868c3b](https://github.com/renalreg/ukrr_models/commit/0868c3b522d2966f5813e481c7f8a74c48381ca6))
+
 ## [2.4.1](https://github.com/renalreg/ukrr_models/compare/v2.4.0...v2.4.1) (2024-08-14)
 
 
