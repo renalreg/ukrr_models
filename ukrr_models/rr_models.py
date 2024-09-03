@@ -166,4 +166,4 @@ class QuarterlyTreatment(Base):
     serum_urate = Column(Numeric(38, 4))
     statin_drug_use = Column(String)
     hba1c_mmol = Column(Numeric(3, 0))
-    alkalkaline_phosphatase = Column(Numeric(38, 4))
+    alkaline_phosphatase = Column(Numeric(38, 4))
