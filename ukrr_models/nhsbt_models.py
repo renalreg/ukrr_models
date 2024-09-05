@@ -1,6 +1,6 @@
 """SQLAlchemy models for NHSBT"""
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, MetaData, Boolean
 
 metadata = MetaData()
@@ -8,50 +8,50 @@ Base = declarative_base(metadata=metadata)
 
 
 class UKTPatient(Base):
-    __tablename__ = "ukt_patients"
+    __tablename__ = "UKT_PATIENTS"
 
-    uktssa_no = Column(Integer, primary_key=True, autoincrement=False)
-    surname = Column(String(50))
-    forename = Column(String(50))
-    sex = Column(String(1))
-    post_code = Column(String(10))
-    new_nhs_no = Column(Integer)
-    chi_no = Column(Integer)
-    hsc_no = Column(Integer)
-    rr_no = Column(Integer)
-    ukt_date_death = Column(DateTime)
-    ukt_date_birth = Column(DateTime)
+    UKTSSA_NO = Column(Integer, primary_key=True, autoincrement=False)
+    SURNAME = Column(String(50))
+    FORENAME = Column(String(50))
+    SEX = Column(String(1))
+    POST_CODE = Column(String(10))
+    NEW_NHS_NO = Column(Integer)
+    CHI_NO = Column(Integer)
+    HSC_NO = Column(Integer)
+    RR_NO = Column(Integer)
+    UKT_DATE_DEATH = Column(DateTime)
+    UKT_DATE_BIRTH = Column(DateTime)
 
 
 class UKTTransplant(Base):
-    __tablename__ = "ukt_transplants"
+    __tablename__ = "UKT_TRANSPLANTS"
 
-    registration_id = Column(String(12), primary_key=True)
-    uktssa_no = Column(Integer)
-    transplant_id = Column(Integer)
-    transplant_type = Column(String(10))
-    transplant_organ = Column(String(50))
-    transplant_unit = Column(String(50))
-    rr_no = Column(Integer)
-    transplant_date = Column(DateTime)
-    ukt_fail_date = Column(DateTime)
-    registration_date = Column(DateTime)
-    registration_date_type = Column(String(12))
-    registration_end_date = Column(DateTime)
-    registration_end_status = Column(String(12))
-    transplant_consideration = Column(String(20))
-    transplant_dialysis = Column(String(12))
-    transplant_relationship = Column(String(20))
-    transplant_sex = Column(String(12))
-    cause_of_failure = Column(String(10))
-    cause_of_failure_text = Column(String(500))
-    cit_mins = Column(String(10))
-    hla_mismatch = Column(String(10))
-    ukt_suspension = Column(Boolean)
+    REGISTRATION_ID = Column(String(12), primary_key=True)
+    UKTSSA_NO = Column(Integer)
+    TRANSPLANT_ID = Column(Integer)
+    TRANSPLANT_TYPE = Column(String(10))
+    TRANSPLANT_ORGAN = Column(String(50))
+    TRANSPLANT_UNIT = Column(String(50))
+    RR_NO = Column(Integer)
+    TRANSPLANT_DATE = Column(DateTime)
+    UKT_FAIL_DATE = Column(DateTime)
+    REGISTRATION_DATE = Column(DateTime)
+    REGISTRATION_DATE_TYPE = Column(String(12))
+    REGISTRATION_END_DATE = Column(DateTime)
+    REGISTRATION_END_STATUS = Column(String(12))
+    TRANSPLANT_CONSIDERATION = Column(String(20))
+    TRANSPLANT_DIALYSIS = Column(String(12))
+    TRANSPLANT_RELATIONSHIP = Column(String(20))
+    TRANSPLANT_SEX = Column(String(12))
+    CAUSE_OF_FAILURE = Column(String(10))
+    CAUSE_OF_FAILURE_TEXT = Column(String(500))
+    CIT_MINS = Column(String(10))
+    HLA_MISMATCH = Column(String(10))
+    UKT_SUSPENSION = Column(Boolean)
 
 
 class UKTSites(Base):
-    __tablename__ = "ukt_sites"
+    __tablename__ = "UKT_SITES"
 
-    site_name = Column(String(50), primary_key=True)
-    rr_code = Column(String(8))
+    SITE_NAME = Column(String(50), primary_key=True)
+    RR_CODE = Column(String(8))

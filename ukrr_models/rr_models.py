@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, DateTime, Numeric
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship, declarative_base
 
 from typing import List
 
@@ -8,162 +7,159 @@ Base = declarative_base()
 
 
 class UKRRPatient(Base):
-    __tablename__ = "patients"
+    __tablename__ = "PATIENTS"
 
     # This is (probably) the last centre for which a file was
-    # loaded and not neccesarily the latest/main unit they
+    # loaded and not necessarily the latest/main unit they
     # attend.
-    hosp_centre = Column(String)
+    HOSP_CENTRE = Column(String)
+    RR_NO = Column(Integer, primary_key=True)
+    SURNAME = Column(String)
+    FORENAME = Column(String)
+    SEX = Column(String)
 
-    rr_no = Column(Integer, primary_key=True)
-    surname = Column(String)
-    forename = Column(String)
-    sex = Column(String)
+    NHS_NO = Column("NEW_NHS_NO", Integer)
+    CHI_NO = Column(Integer)
+    HSC_NO = Column(Integer)
+    UKTSSA_NO = Column(Integer)
 
-    nhs_no = Column("new_nhs_no", Integer)
-    chi_no = Column(Integer)
-    hsc_no = Column(Integer)
-    uktssa_no = Column(Integer)
+    DATE_BIRTH = Column(Date)
+    DATE_DEATH = Column(Date)
 
-    date_birth = Column(Date)
-    date_death = Column(Date)
+    ETHNICITY = Column("ETHGR_CODE", String)
 
-    ethnicity = Column("ethgr_code", String)
+    BLOOD_GROUP = Column(String)
+    BLOOD_RHESUS = Column("BLOOD_GROUP_RHESUS", String)
 
-    blood_group = Column(String)
-    blood_rhesus = Column("blood_group_rhesus", String)
-
-    cod_read = Column(String)
+    COD_READ = Column(String)
     # TODO: [GIT-18] These should be updated to String in the DB.
-    cod_edta1 = Column(Integer)
-    cod_edta2 = Column(Integer)
-    cod_text = Column(String)
+    COD_EDTA1 = Column(Integer)
+    COD_EDTA2 = Column(Integer)
+    COD_TEXT = Column(String)
 
     # This is the date the patient was
     # first loaded into the UKRR database
-    date_registered = Column(Date)
+    DATE_REGISTERED = Column(Date)
+    FIRST_SEEN_DATE = Column(Date)
+    OPT_OUT_FLAG = Column(String)
 
-    first_seen_date = Column(Date)
-
-    patient_demographics: Mapped[List["Patient_Demographics"]] = relationship(
-        back_populates="ukrr_patient"
+    PATIENT_DEMOGRAPHICS: Mapped[List["Patient_Demographics"]] = relationship(
+        back_populates="UKRR_PATIENT"
     )
-
-    opt_out_flag = Column(String)
 
 
 class Patient_Demographics(Base):
-    __tablename__ = "patient_demog"
+    __tablename__ = "PATIENT_DEMOG"
 
-    rr_no = Column(Integer, ForeignKey("patients.rr_no"), primary_key=True)
-    hosp_centre = Column(String, primary_key=True)
+    RR_NO = Column(Integer, ForeignKey("PATIENTS.RR_NO"), primary_key=True)
+    HOSP_CENTRE = Column(String, primary_key=True)
 
-    surname = Column(String)
-    forename = Column(String)
-    birth_name = Column(String)
-    alias_name = Column(String)
-    date_birth = Column(Date)
-    date_death = Column(Date)
+    SURNAME = Column(String)
+    FORENAME = Column(String)
+    BIRTH_NAME = Column(String)
+    ALIAS_NAME = Column(String)
+    DATE_BIRTH = Column(Date)
+    DATE_DEATH = Column(Date)
 
-    nhs_no = Column("new_nhs_no", Integer)
-    chi_no = Column(Integer)
-    hsc_no = Column(Integer)
-    uktssa_no = Column(Integer)
-    local_hosp_no = Column(String)
+    NHS_NO = Column("NEW_NHS_NO", Integer)
+    CHI_NO = Column(Integer)
+    HSC_NO = Column(Integer)
+    UKTSSA_NO = Column(Integer)
+    LOCAL_HOSP_NO = Column(String)
 
-    first_seen_date = Column(Date)
+    FIRST_SEEN_DATE = Column(Date)
 
-    ukrr_patient: Mapped["UKRRPatient"] = relationship(
-        back_populates="patient_demographics"
+    UKRR_PATIENT: Mapped["UKRRPatient"] = relationship(
+        back_populates="PATIENT_DEMOGRAPHICS"
     )
 
 
 class UKRR_Deleted_Patient(Base):
-    __tablename__ = "deleted_patients"
+    __tablename__ = "DELETED_PATIENTS"
 
-    rr_no = Column(Integer, primary_key=True)
-    surname = Column(String)
-    forename = Column(String)
-    sex = Column(String)
+    RR_NO = Column(Integer, primary_key=True)
+    SURNAME = Column(String)
+    FORENAME = Column(String)
+    SEX = Column(String)
 
-    nhs_no = Column("new_nhs_no", Integer)
-    chi_no = Column(Integer)
-    hsc_no = Column(Integer)
-    uktssa_no = Column(Integer)
+    NHS_NO = Column("NEW_NHS_NO", Integer)
+    CHI_NO = Column(Integer)
+    HSC_NO = Column(Integer)
+    UKTSSA_NO = Column(Integer)
 
-    local_hosp_no = Column(String)
+    LOCAL_HOSP_NO = Column(String)
 
-    date_birth = Column(Date)
-    date_death = Column(Date)
+    DATE_BIRTH = Column(Date)
+    DATE_DEATH = Column(Date)
 
 
 class QuarterlyTreatment(Base):
-    __tablename__ = "quarterly_treatment"
+    __tablename__ = "QUARTERLY_TREATMENT"
 
-    rr_no = Column(Integer, primary_key=True)
-    date_start = Column(DateTime, primary_key=True)
-    treatment_modality = Column(String, primary_key=True)
-    treatment_centre = Column(String, primary_key=True)
-    hosp_centre = Column(String, primary_key=True)
-    date_end = Column(DateTime)
-    add_haemo_on_pd = Column(String)
-    creatinine = Column(Numeric(38, 4))
-    urea = Column(Numeric(38, 4))
-    haemoglobin = Column(Numeric(38, 4))
-    ferretin = Column(Numeric(38, 4))
-    albumin = Column(Numeric(38, 4))
-    aluminium = Column(Numeric(38, 4))
-    hba1c = Column(Numeric(38, 4))
-    cholesterol = Column(Numeric(38, 4))
-    ipth = Column(Numeric(38, 4))
-    calcium_uncorr = Column(Numeric(38, 4))
-    calcium_corr = Column(Numeric(38, 4))
-    phosphate = Column(Numeric(38, 4))
-    bicarbonate = Column(Numeric(38, 4))
-    systolic_bp = Column(Numeric(20, 0))
-    diastolic_bp = Column(Numeric(20, 0))
-    weight = Column(Numeric(38, 4))
-    urea_reduction_ratio = Column(Numeric(38, 4))
-    epo_use = Column(String)
-    hd_supervison = Column(String)
-    dialyser_used = Column(String)
-    flow_rate = Column(Numeric(20, 0))
-    dial_reuse = Column(String)
-    times_per_week = Column(Numeric(20, 0))
-    dial_time = Column(Numeric(38, 4))
-    bicarb_dial = Column(String)
-    weekly_fluid_vol = Column(Numeric(38, 4))
-    bag_size = Column(Numeric(38, 4))
-    centre_pri = Column(String)
-    post_systolic_bp = Column(Numeric(20, 0))
-    post_diastolic_bp = Column(Numeric(20, 0))
-    sodium = Column(Numeric(38, 4))
-    pd_dialysate_ktv = Column(Numeric(38, 4))
-    pd_urine_ktv = Column(Numeric(38, 4))
-    pd_npcr = Column(Numeric(38, 4))
-    crp = Column(Numeric(38, 4))
-    ldl_cholesterol = Column(Numeric(38, 4))
-    hdl_cholesterol = Column(Numeric(38, 4))
-    triglycerides = Column(Numeric(38, 4))
-    waiting_list_status = Column(String)
-    creatinine_first_month = Column(Numeric(38, 4))
-    creatinine_second_month = Column(Numeric(38, 4))
-    percent_hypochromic = Column(Numeric(38, 4))
-    mch = Column(Numeric(38, 4))
-    b12 = Column(Numeric(38, 4))
-    red_cell_folate = Column(Numeric(38, 4))
-    transferrin_saturation = Column(Numeric(38, 4))
-    serum_potassium = Column(Numeric(38, 4))
-    protein_creatinine_ratio = Column(Numeric(38, 4))
-    albumin_creatinine_ratio = Column(Numeric(38, 4))
-    serum_cell_folate = Column(Numeric(38, 4))
-    ace_inhibitor = Column(String)
-    renagel = Column(String)
-    lanthanum = Column(String)
-    cinacalcet = Column(String)
-    calcium_based_binder = Column(String)
-    alucaps = Column(String)
-    serum_urate = Column(Numeric(38, 4))
-    statin_drug_use = Column(String)
-    hba1c_mmol = Column(Numeric(3, 0))
-    alkaline_phosphatase = Column(Numeric(38, 4))
+    RR_NO = Column(Integer, primary_key=True)
+    DATE_START = Column(DateTime, primary_key=True)
+    TREATMENT_MODALITY = Column(String, primary_key=True)
+    TREATMENT_CENTRE = Column(String, primary_key=True)
+    HOSP_CENTRE = Column(String, primary_key=True)
+    DATE_END = Column(DateTime)
+    ADD_HAEMO_ON_PD = Column(String)
+    CREATININE = Column(Numeric(38, 4))
+    UREA = Column(Numeric(38, 4))
+    HAEMOGLOBIN = Column(Numeric(38, 4))
+    FERRETIN = Column(Numeric(38, 4))
+    ALBUMIN = Column(Numeric(38, 4))
+    ALUMINIUM = Column(Numeric(38, 4))
+    HBA1C = Column(Numeric(38, 4))
+    CHOLESTEROL = Column(Numeric(38, 4))
+    IPTH = Column(Numeric(38, 4))
+    CALCIUM_UNCORR = Column(Numeric(38, 4))
+    CALCIUM_CORR = Column(Numeric(38, 4))
+    PHOSPHATE = Column(Numeric(38, 4))
+    BICARBONATE = Column(Numeric(38, 4))
+    SYSTOLIC_BP = Column(Numeric(20, 0))
+    DIASTOLIC_BP = Column(Numeric(20, 0))
+    WEIGHT = Column(Numeric(38, 4))
+    UREA_REDUCTION_RATIO = Column(Numeric(38, 4))
+    EPO_USE = Column(String)
+    HD_SUPERVISION = Column(String)
+    DIALYSER_USED = Column(String)
+    FLOW_RATE = Column(Numeric(20, 0))
+    DIAL_REUSE = Column(String)
+    TIMES_PER_WEEK = Column(Numeric(20, 0))
+    DIAL_TIME = Column(Numeric(38, 4))
+    BICARB_DIAL = Column(String)
+    WEEKLY_FLUID_VOL = Column(Numeric(38, 4))
+    BAG_SIZE = Column(Numeric(38, 4))
+    CENTRE_PRI = Column(String)
+    POST_SYSTOLIC_BP = Column(Numeric(20, 0))
+    POST_DIASTOLIC_BP = Column(Numeric(20, 0))
+    SODIUM = Column(Numeric(38, 4))
+    PD_DIALYSATE_KTV = Column(Numeric(38, 4))
+    PD_URINE_KTV = Column(Numeric(38, 4))
+    PD_NPCR = Column(Numeric(38, 4))
+    CRP = Column(Numeric(38, 4))
+    LDL_CHOLESTEROL = Column(Numeric(38, 4))
+    HDL_CHOLESTEROL = Column(Numeric(38, 4))
+    TRIGLYCERIDES = Column(Numeric(38, 4))
+    WAITING_LIST_STATUS = Column(String)
+    CREATININE_FIRST_MONTH = Column(Numeric(38, 4))
+    CREATININE_SECOND_MONTH = Column(Numeric(38, 4))
+    PERCENT_HYPOCHROMIC = Column(Numeric(38, 4))
+    MCH = Column(Numeric(38, 4))
+    B12 = Column(Numeric(38, 4))
+    RED_CELL_FOLATE = Column(Numeric(38, 4))
+    TRANSFERRIN_SATURATION = Column(Numeric(38, 4))
+    SERUM_POTASSIUM = Column(Numeric(38, 4))
+    PROTEIN_CREATININE_RATIO = Column(Numeric(38, 4))
+    ALBUMIN_CREATININE_RATIO = Column(Numeric(38, 4))
+    SERUM_CELL_FOLATE = Column(Numeric(38, 4))
+    ACE_INHIBITOR = Column(String)
+    RENAGEL = Column(String)
+    LANTHANUM = Column(String)
+    CINACALCET = Column(String)
+    CALCIUM_BASED_BINDER = Column(String)
+    ALUCAPS = Column(String)
+    SERUM_URATE = Column(Numeric(38, 4))
+    STATIN_DRUG_USE = Column(String)
+    HBA1C_MMOL = Column(Numeric(3, 0))
+    ALKALINE_PHOSPHATASE = Column(Numeric(38, 4))
