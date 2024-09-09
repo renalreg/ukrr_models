@@ -23,7 +23,7 @@ from sqlalchemy import (
     Unicode,
     text,
 )
-from sqlalchemy.dialects.mssql import DATETIME2, TINYINT
+from sqlalchemy.dialects.mssql import DATETIME2
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -4859,25 +4859,6 @@ t_UPLOAD_LOG = Table(
     Column("SQL_COUNT", BigInteger),
     Column("QRT_NO", Integer),
 )
-
-
-class USERACCESS(Base):
-    __tablename__ = "USER_ACCESS"
-    __table_args__ = (PrimaryKeyConstraint("NAME", "APP", name="PK_USER_ACCESS"),)
-
-    NAME: Mapped[str] = mapped_column(
-        String(50, "Latin1_General_CI_AS"),
-        primary_key=True,
-        comment="Either group name or user name",
-    )
-    ACCESS_LEVEL: Mapped[int] = mapped_column(TINYINT)
-    APP: Mapped[str] = mapped_column(
-        String(30, "Latin1_General_CI_AS"), primary_key=True
-    )
-    KIND: Mapped[Optional[str]] = mapped_column(
-        String(1, "Latin1_General_CI_AS"), comment="User (U) or Group(G)"
-    )
-    WHO: Mapped[Optional[str]] = mapped_column(Unicode(100, "Latin1_General_CI_AS"))
 
 
 t_VWE_ACUTE_PATIENTS = Table(
