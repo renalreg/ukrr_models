@@ -54,10 +54,10 @@ class UKRRPatient(Base):
     COD_READ = Column(String)
     cod_read: Column = synonym("COD_READ")
 
-    COD_EDTA1 = Column(Integer)
+    COD_EDTA1 = Column(String)
     cod_edta1: Column = synonym("COD_EDTA1")
 
-    COD_EDTA2 = Column(Integer)
+    COD_EDTA2 = Column(String)
     cod_edta2: Column = synonym("COD_EDTA2")
 
     COD_TEXT = Column(String)
