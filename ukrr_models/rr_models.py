@@ -81,6 +81,9 @@ class UKRRPatient(Base):
     PATIENT_DEMOGRAPHICS: Mapped[List["Patient_Demographics"]] = relationship(
         back_populates="UKRR_PATIENT"
     )
+    patient_demographics: Mapped[List["Patient_Demographics"]] = synonym(
+        "PATIENT_DEMOGRAPHICS"
+    )
 
 
 class Patient_Demographics(Base):
@@ -133,6 +136,7 @@ class Patient_Demographics(Base):
     UKRR_PATIENT: Mapped["UKRRPatient"] = relationship(
         back_populates="PATIENT_DEMOGRAPHICS"
     )
+    ukrr_patient: Mapped["UKRRPatient"] = synonym("UKRR_PATIENT")
 
 
 class RSA_Extraction_Items(Base):
