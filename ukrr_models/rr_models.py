@@ -60,11 +60,11 @@ class UKRRPatient(Base):
     COD_READ: Mapped[str] = mapped_column(String)
     cod_read: Mapped[str] = synonym("COD_READ")
 
-    COD_EDTA1: Mapped[int] = mapped_column(Integer)
-    cod_edta1: Mapped[int] = synonym("COD_EDTA1")
+    COD_EDTA1: Mapped[str] = mapped_column(String)
+    cod_edta1: Mapped[str] = synonym("COD_EDTA1")
 
-    COD_EDTA2: Mapped[int] = mapped_column(Integer)
-    cod_edta2: Mapped[int] = synonym("COD_EDTA2")
+    COD_EDTA2: Mapped[str] = mapped_column(String)
+    cod_edta2: Mapped[str] = synonym("COD_EDTA2")
 
     COD_TEXT: Mapped[str] = mapped_column(String)
     cod_text: Mapped[str] = synonym("COD_TEXT")
