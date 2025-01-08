@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.0.0](https://github.com/renalreg/ukrr_models/compare/v2.4.2...v3.0.0) (2025-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* Dropped py 3.8 support ([#34](https://github.com/renalreg/ukrr_models/issues/34))
+
+### Features
+
+* Dropped py 3.8 support ([#34](https://github.com/renalreg/ukrr_models/issues/34)) ([848b564](https://github.com/renalreg/ukrr_models/commit/848b56409f15bae240112dd98aae4909f38c0d74))
+* **rr_models:** :sparkles: Added new table rsa_extraction_items ([#36](https://github.com/renalreg/ukrr_models/issues/36)) ([e693c13](https://github.com/renalreg/ukrr_models/commit/e693c13cfd254cf4269828c4d7fc402b80e56fd4))
+
 ## [2.4.2](https://github.com/renalreg/ukrr_models/compare/v2.4.1...v2.4.2) (2024-09-03)
 
 
