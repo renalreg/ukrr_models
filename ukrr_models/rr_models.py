@@ -279,8 +279,8 @@ class QuarterlyTreatment(Base):
     EPO_USE: Mapped[str] = mapped_column(String)
     epo_use: Mapped[str] = synonym("EPO_USE")
 
-    HD_SUPERVISION: Mapped[str] = mapped_column(String)
-    hd_supervision: Mapped[str] = synonym("HD_SUPERVISION")
+    HD_SUPERVISON: Mapped[str] = mapped_column(String)
+    hd_supervison: Mapped[str] = synonym("HD_SUPERVISON")
 
     DIALYSER_USED: Mapped[str] = mapped_column(String)
     dialyser_used: Mapped[str] = synonym("DIALYSER_USED")
