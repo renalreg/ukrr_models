@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.1](https://github.com/renalreg/ukrr_models/compare/v3.0.0...v3.0.1) (2025-01-09)
+
+
+### Bug Fixes
+
+* **rr_models:** :bug: added synonym for the relationships ([#37](https://github.com/renalreg/ukrr_models/issues/37)) ([08bba60](https://github.com/renalreg/ukrr_models/commit/08bba60ad669f4a93921b667238571e1c4361d4f))
+* **rr_models:** :bug: fixed spelling ([#39](https://github.com/renalreg/ukrr_models/issues/39)) ([df98bea](https://github.com/renalreg/ukrr_models/commit/df98bea4b6826b40b9889eb5f11dc461f442b1e3))
+
 ## [3.0.0](https://github.com/renalreg/ukrr_models/compare/v2.4.2...v3.0.0) (2025-01-08)
 
 
