@@ -408,7 +408,7 @@ class QuarterlyTreatment(Base):
     alkaline_phosphatase: Mapped[float] = synonym("ALKALINE_PHOSPHATASE")
 
 
-class MODALITYCODES(Base):
+class ModalityCodes(Base):
     __tablename__ = "MODALITY_CODES"
     REGISTRY_CODE: Mapped[str] = mapped_column(String, primary_key=True)
     REGISTRY_CODE_TYPE: Mapped[str] = mapped_column(String)
@@ -425,7 +425,7 @@ class MODALITYCODES(Base):
     TRANSFER_OUT: Mapped[Optional[bool]] = mapped_column(Boolean)
 
 
-class RRNOLOAD(Base):
+class RRNoLoad(Base):
     __tablename__ = "RR_NOLOAD"
     SITE: Mapped[str] = mapped_column(String, primary_key=True)
     QUARTER: Mapped[int] = mapped_column(Integer, primary_key=True)
