@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/renalreg/ukrr_models/compare/v3.0.1...v3.1.0) (2025-07-30)
+
+
+### Features
+
+* **TNG-1188:** added models ([#41](https://github.com/renalreg/ukrr_models/issues/41)) ([b204d4d](https://github.com/renalreg/ukrr_models/commit/b204d4d148560be74267569e754371e7db5a5ed2))
+
 ## [3.0.1](https://github.com/renalreg/ukrr_models/compare/v3.0.0...v3.0.1) (2025-01-09)
 
 
