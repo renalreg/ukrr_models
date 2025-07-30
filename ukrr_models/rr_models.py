@@ -1,4 +1,5 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import (
@@ -8,6 +9,7 @@ from sqlalchemy.orm import (
     relationship,
     synonym,
 )
+from sqlalchemy.sql.sqltypes import Boolean, BigInteger
 
 Base = declarative_base()
 
@@ -404,3 +406,37 @@ class QuarterlyTreatment(Base):
 
     ALKALINE_PHOSPHATASE: Mapped[float] = mapped_column(Numeric(38, 4))
     alkaline_phosphatase: Mapped[float] = synonym("ALKALINE_PHOSPHATASE")
+
+
+class ModalityCodes(Base):
+    __tablename__ = "MODALITY_CODES"
+    REGISTRY_CODE: Mapped[str] = mapped_column(String, primary_key=True)
+    REGISTRY_CODE_TYPE: Mapped[str] = mapped_column(String)
+    ACUTE: Mapped[bool] = mapped_column(Boolean)
+    TRANSFER_IN: Mapped[bool] = mapped_column(Boolean)
+    CKD_: Mapped[bool] = mapped_column("CKD", Boolean)
+    CONS: Mapped[bool] = mapped_column(Boolean)
+    RRT: Mapped[bool] = mapped_column(Boolean)
+    END_OF_CARE: Mapped[bool] = mapped_column(Boolean)
+    IS_IMPRECISE: Mapped[bool] = mapped_column(Boolean)
+    REGISTRY_CODE_DESC: Mapped[Optional[str]] = mapped_column(String)
+    EQUIV_MODALITY: Mapped[Optional[str]] = mapped_column(String)
+    NHSBT_TRANSPLANT_TYPE: Mapped[Optional[str]] = mapped_column(String)
+    TRANSFER_OUT: Mapped[Optional[bool]] = mapped_column(Boolean)
+
+
+class RRNoLoad(Base):
+    __tablename__ = "RR_NOLOAD"
+    SITE: Mapped[str] = mapped_column(String, primary_key=True)
+    QUARTER: Mapped[int] = mapped_column(Integer, primary_key=True)
+    LOCAL_HOSP_NO: Mapped[str] = mapped_column(String, primary_key=True)
+    SURNAME: Mapped[Optional[str]] = mapped_column(String)
+    FORENAME: Mapped[Optional[str]] = mapped_column(String)
+    DATE_BIRTH: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    NEW_NHS_NO: Mapped[Optional[int]] = mapped_column(BigInteger)
+    CODED_REASON: Mapped[Optional[str]] = mapped_column(String)
+    REASON_FREETEXT: Mapped[Optional[str]] = mapped_column(String)
+    EXTRA_COMMENT: Mapped[Optional[str]] = mapped_column(String)
+    INITIALS: Mapped[Optional[str]] = mapped_column(String)
+    RR_NO: Mapped[Optional[int]] = mapped_column(BigInteger)
+    OTHER_SITE_CODE: Mapped[Optional[str]] = mapped_column(String)
