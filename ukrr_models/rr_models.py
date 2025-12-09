@@ -201,7 +201,11 @@ class UKRR_Deleted_Patient(Base):
 
     DATE_DEATH: Mapped[str] = mapped_column(Date)
     date_death: Mapped[str] = synonym("DATE_DEATH")
-
+    
+    AUDIT_DATE: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    audit_date: Mapped[Optional[datetime]] = synonym("AUDIT_DATE")
+    AUDIT_TIME: Mapped[Optional[int]] = mapped_column(Numeric(8, 0))
+    audit_time: Mapped[Optional[datetime]] = synonym("AUDIT_TIME")
 
 class QuarterlyTreatment(Base):
     __tablename__ = "QUARTERLY_TREATMENT"
