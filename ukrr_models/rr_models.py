@@ -187,6 +187,7 @@ class UKRR_Deleted_Patient(Base):
     audit_date: Mapped[Optional[datetime]] = mapped_column("AUDIT_DATE", DateTime)
     audit_time: Mapped[Optional[int]] = mapped_column("AUDIT_TIME", Numeric(8, 0))
 
+
 class QuarterlyTreatment(Base):
     __tablename__ = "QUARTERLY_TREATMENT"
 
