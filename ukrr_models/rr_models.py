@@ -169,43 +169,23 @@ class RSA_Extraction_Items(Base):
 class UKRR_Deleted_Patient(Base):
     __tablename__ = "DELETED_PATIENTS"
 
-    RR_NO: Mapped[int] = mapped_column(Integer, primary_key=True)
-    rr_no: Mapped[int] = synonym("RR_NO")
+    rr_no: Mapped[int] = mapped_column("RR_NO", Integer, primary_key=True)
 
-    SURNAME: Mapped[str] = mapped_column(String)
-    surname: Mapped[str] = synonym("SURNAME")
+    surname: Mapped[str] = mapped_column("SURNAME", String)
+    forename: Mapped[str] = mapped_column("FORENAME", String)
+    sex: Mapped[str] = mapped_column("SEX", String)
 
-    FORENAME: Mapped[str] = mapped_column(String)
-    forename: Mapped[str] = synonym("FORENAME")
+    nhs_no: Mapped[int] = mapped_column("NEW_NHS_NO", Integer)
+    chi_no: Mapped[int] = mapped_column("CHI_NO", Integer)
+    hsc_no: Mapped[int] = mapped_column("HSC_NO", Integer)
+    uk_tssa_no: Mapped[int] = mapped_column("UKTSSA_NO", Integer)
+    local_hosp_no: Mapped[str] = mapped_column("LOCAL_HOSP_NO", String)
 
-    SEX: Mapped[str] = mapped_column(String)
-    sex: Mapped[str] = synonym("SEX")
+    date_birth: Mapped[Optional[datetime]] = mapped_column("DATE_BIRTH", Date)
+    date_death: Mapped[Optional[datetime]] = mapped_column("DATE_DEATH", Date)
 
-    NHS_NO: Mapped[int] = mapped_column("NEW_NHS_NO", Integer)
-    nhs_no: Mapped[int] = synonym("NHS_NO")
-
-    CHI_NO: Mapped[int] = mapped_column(Integer)
-    chi_no: Mapped[int] = synonym("CHI_NO")
-
-    HSC_NO: Mapped[int] = mapped_column(Integer)
-    hsc_no: Mapped[int] = synonym("HSC_NO")
-
-    UKTSSA_NO: Mapped[int] = mapped_column(Integer)
-    uk_tssa_no: Mapped[int] = synonym("UKTSSA_NO")
-
-    LOCAL_HOSP_NO: Mapped[str] = mapped_column(String)
-    local_hosp_no: Mapped[str] = synonym("LOCAL_HOSP_NO")
-
-    DATE_BIRTH: Mapped[str] = mapped_column(Date)
-    date_birth: Mapped[str] = synonym("DATE_BIRTH")
-
-    DATE_DEATH: Mapped[str] = mapped_column(Date)
-    date_death: Mapped[str] = synonym("DATE_DEATH")
-    
-    AUDIT_DATE: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    audit_date: Mapped[Optional[datetime]] = synonym("AUDIT_DATE")
-    AUDIT_TIME: Mapped[Optional[int]] = mapped_column(Numeric(8, 0))
-    audit_time: Mapped[Optional[datetime]] = synonym("AUDIT_TIME")
+    audit_date: Mapped[Optional[datetime]] = mapped_column("AUDIT_DATE", DateTime)
+    audit_time: Mapped[Optional[int]] = mapped_column("AUDIT_TIME", Numeric(8, 0))
 
 class QuarterlyTreatment(Base):
     __tablename__ = "QUARTERLY_TREATMENT"

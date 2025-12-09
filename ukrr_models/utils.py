@@ -66,8 +66,8 @@ def delete_patient(
     }
     
     deleted_patient = UKRR_Deleted_Patient(**deleted_patient_params)
-    deleted_patient.AUDIT_DATE = audit_date_expression()
-    delete_patient.AUDIT_TIME = audit_time_expression()
+    deleted_patient.audit_date = audit_date_expression()
+    delete_patient.audit_time = audit_time_expression()
     
     try:
         session.add(deleted_patient)
