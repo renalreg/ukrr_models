@@ -1,3 +1,4 @@
+import argparse
 import datetime as dt
 from typing import Optional, Iterable
 
@@ -5,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy import func, cast, Date
 from sqlalchemy.exc import SQLAlchemyError
+from rr_database.sqlserver import SQLServerDatabase
 
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
 
@@ -76,3 +78,27 @@ def delete_patient(
         raise DeletePatientError(f"Error adding patient (RR_NO={rrno}) to DELETED_PATIENTS")
     
     print(f"Deleted {rrno}")
+    
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--rrno", required=True)
+    parser.add_argument("--username", required=True)
+    parser.add_argument("--authorised-by", required=True)
+    parser.add_argument("--reason", required=True)
+    parser.add_argument("--duplicate-rrno", required=False)
+    
+    args = parser.parse_args()
+    
+    database = SQLServerDatabase.connect(server="RR-SQL-Live", database="renalreg")
+    with database.session as session:
+        print(f"Deleting patient {args.rrno}, authorised by {args.authorised_by} for reason {args.reason}")
+        delete_patient(
+            session=session,
+            rrno=args.rrno,
+            username=args.username,
+            authorised_by=args.authorised_by,
+            reason=args.reason,
+            duplicate_rrno=args.duplicate_rrno,
+        )
+    
