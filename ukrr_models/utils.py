@@ -20,10 +20,126 @@ def audit_time_expression():
         func.datepart("minute", func.getdate()),
     )
 
+def row_to_str(rrno, keys, values) -> str:
+    """Format a row as a string."""
+    # Add RR_NO to the start
+    keys = ["RR_NO"] + keys
+    values = [rrno] + values
+
+    return ", ".join(["%s=%s" % (k, v) for k, v in zip(keys, values)])
 
 class DeletePatientError(Exception):
     pass
 
+class MergePatientError(Exception):
+    pass
+
+
+def merge_patient(
+    session: Session,
+    table_desc,
+    source_rrno: str,
+    destination_rrno: str,
+):
+    print("Merging %s to %s..." % (source_rrno, destination_rrno))
+    for table in table_desc:
+        print("Merging %s table..." % table)
+        if table == "PATIENT_XREF":
+            continue
+        
+        key_columns = list(table_desc[table].key_columns)
+        
+        if "RR_NO" in key_columns:
+            # We ignore the RR_NO column when comparing rows
+            key_columns.remove("RR_NO")
+        else:
+            # Skip tables that don't contain patient data (i.e. no RR_NO column)
+            continue
+        
+        # Skip tables where the RR_NO is the only key
+        # e.g. PATIENTS, EXTERNAL_COMM
+        if len(key_columns) == 0:
+            continue
+        
+        sql = "SELECT {columns} FROM {table} WHERE RR_NO = :RR_NO".format(
+            table=table,
+            columns=", ".join(key_columns),
+        )
+        
+        print(f"Getting source data from {table}...")
+        # Get data for source patient
+        session.execute(sql, {"RR_NO": source_rrno})
+        # Convert to a python list for row equality checking
+        src_rows = [list(x) for x in session.fetchall()]
+        
+        print(f"Getting destination data from {table}...")
+
+        # Get data for destination patient
+        session.execute(sql, {"RR_NO": destination_rrno})
+        dest_rows = [list(x) for x in session.fetchall()]
+        
+        update_sql = "UPDATE {table} SET RR_NO = :DEST_RR_NO WHERE RR_NO = :SRC_RR_NO {conditions}".format(
+            table=table,
+            conditions=" ".join("AND {0} = :{0}".format(x) for x in key_columns),
+        )
+
+        print(f"Updating {table}...")
+        
+        for src_row in src_rows:
+            # Skip ESRF rows that were automatically created by the
+            # validation (HOSP_CENTRE is set to 999)
+            if table == "ESRF" and src_row[0] == "999":
+                continue
+
+            # Check if destination patient already has a row matching
+            # this one (comparing the keys)
+            if src_row in dest_rows:
+                # Skip update
+                continue
+
+            # Move the row from the source patient to the destination patient
+            params = {
+                "SRC_RR_NO": source_rrno,
+                "DEST_RR_NO": destination_rrno,
+            }
+            params.update(dict(list(zip(key_columns, src_row))))
+
+            try:
+                session.execute(update_sql, params)
+            except Exception:
+                # Print the exception
+                import traceback
+
+                traceback.print_exc()
+
+                raise MergePatientError(
+                    "Error updating {table} ({row})".format(
+                        table=table,
+                        row=row_to_str(source_rrno, key_columns, src_row),
+                    )
+                )
+
+            if session.cursor.rowcount != 1:
+                msg = (
+                    "Expected to update 1 row from {table} "
+                    "({row}) but actually updated {count} rows"
+                )
+                raise MergePatientError(
+                    msg.format(
+                        table=table,
+                        row=row_to_str(source_rrno, key_columns, src_row),
+                        count=session.cursor.rowcount,
+                    )
+                )
+
+            print(
+                "Moved {table} ({row}) from {src_rrno} to {dest_rrno}".format(
+                    table=table,
+                    row=row_to_str(source_rrno, key_columns, src_row),
+                    src_rrno=source_rrno,
+                    dest_rrno=destination_rrno,
+                )
+            )
 
 def delete_patient(
     session: Session,
@@ -96,6 +212,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     database = SQLServerDatabase.connect(server="RR-SQL-Live", database="renalreg")
+    table_desc = database.table_definitions()
     with database.session as session:
         print(
             f"Deleting patient {args.rrno}, authorised by {args.authorised_by} for reason {args.reason}"
