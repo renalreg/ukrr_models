@@ -1,8 +1,8 @@
 import argparse
 from typing import Optional
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy import select, text
 from sqlalchemy import func, cast, Date
 from sqlalchemy.exc import SQLAlchemyError
 from rr_database.sqlserver import SQLServerDatabase
@@ -61,26 +61,25 @@ def merge_patient(
         if len(key_columns) == 0:
             continue
         
-        sql = "SELECT {columns} FROM {table} WHERE RR_NO = :RR_NO".format(
-            table=table,
-            columns=", ".join(key_columns),
-        )
+        sql = f"SELECT {', '.join(key_columns)} FROM {table} WHERE RR_NO = :RR_NO"
         
         print(f"Getting source data from {table}...")
         # Get data for source patient
-        session.execute(sql, {"RR_NO": source_rrno})
+        result = session.execute(text(sql), {"RR_NO": source_rrno})
         # Convert to a python list for row equality checking
-        src_rows = [list(x) for x in session.fetchall()]
+        src_rows = [list(x) for x in result.fetchall()]
         
         print(f"Getting destination data from {table}...")
 
         # Get data for destination patient
-        session.execute(sql, {"RR_NO": destination_rrno})
-        dest_rows = [list(x) for x in session.fetchall()]
+        result = session.execute(text(sql), {"RR_NO": destination_rrno})
+        dest_rows = [list(x) for x in result.fetchall()]
         
-        update_sql = "UPDATE {table} SET RR_NO = :DEST_RR_NO WHERE RR_NO = :SRC_RR_NO {conditions}".format(
-            table=table,
-            conditions=" ".join("AND {0} = :{0}".format(x) for x in key_columns),
+        update_sql = (
+            f"UPDATE {table} "
+            f"SET RR_NO = :DEST_RR_NO "
+            f"WHERE RR_NO = :SRC_RR_NO "
+            + " ".join(f"AND {c} = :{c}" for c in key_columns)
         )
 
         print(f"Updating {table}...")
@@ -105,7 +104,7 @@ def merge_patient(
             params.update(dict(list(zip(key_columns, src_row))))
 
             try:
-                session.execute(update_sql, params)
+                result = session.execute(text(update_sql), params)
             except Exception:
                 # Print the exception
                 import traceback
@@ -119,7 +118,7 @@ def merge_patient(
                     )
                 )
 
-            if session.cursor.rowcount != 1:
+            if result.rowcount != 1:
                 msg = (
                     "Expected to update 1 row from {table} "
                     "({row}) but actually updated {count} rows"
@@ -128,7 +127,7 @@ def merge_patient(
                     msg.format(
                         table=table,
                         row=row_to_str(source_rrno, key_columns, src_row),
-                        count=session.cursor.rowcount,
+                        count=result.rowcount,
                     )
                 )
 
