@@ -5,7 +5,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from rr_database.sqlserver import SQLServerDatabase
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
-from sqlalchemy import func, cast, Date, MetaData, Table, bindparam, select, text, update
+from sqlalchemy import (
+    func,
+    cast,
+    Date,
+    MetaData,
+    Table,
+    bindparam,
+    select,
+    update,
+)
 
 
 def audit_date_expression():
@@ -61,7 +70,7 @@ def merge_patient(
         # e.g. PATIENTS, EXTERNAL_COMM
         if len(key_columns) == 0:
             continue
-        
+
         schema = None
         metadata = MetaData()
         table = Table(
@@ -71,7 +80,7 @@ def merge_patient(
             autoload_with=session.get_bind(),
         )
 
-        columns =  [table.c[c] for c in key_columns]
+        columns = [table.c[c] for c in key_columns]
         statement = select(*columns).where(table.c.RR_NO == bindparam("RR_NO"))
 
         print(f"Getting source data from {table}...")
@@ -125,7 +134,7 @@ def merge_patient(
                     )
                 )
 
-            if result.rowcount != 1: # type: ignore[attr-defined]
+            if result.rowcount != 1:  # type: ignore[attr-defined]
                 msg = (
                     "Expected to update 1 row from {table} "
                     "({row}) but actually updated {count} rows"
@@ -134,7 +143,7 @@ def merge_patient(
                     msg.format(
                         table=table,
                         row=row_to_str(source_rrno, key_columns, src_row),
-                        count=result.rowcount, 
+                        count=result.rowcount,
                     )
                 )
 
