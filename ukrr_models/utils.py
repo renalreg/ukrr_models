@@ -1,13 +1,11 @@
 import argparse
+import traceback
 from typing import Optional
-
 from sqlalchemy.orm import Session
-from sqlalchemy import select, text
-from sqlalchemy import func, cast, Date
 from sqlalchemy.exc import SQLAlchemyError
 from rr_database.sqlserver import SQLServerDatabase
-
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
+from sqlalchemy import func, cast, Date, MetaData, Table, bindparam, select, text, update
 
 
 def audit_date_expression():
@@ -20,6 +18,7 @@ def audit_time_expression():
         func.datepart("minute", func.getdate()),
     )
 
+
 def row_to_str(rrno, keys, values) -> str:
     """Format a row as a string."""
     # Add RR_NO to the start
@@ -28,8 +27,10 @@ def row_to_str(rrno, keys, values) -> str:
 
     return ", ".join(["%s=%s" % (k, v) for k, v in zip(keys, values)])
 
+
 class DeletePatientError(Exception):
     pass
+
 
 class MergePatientError(Exception):
     pass
@@ -42,52 +43,61 @@ def merge_patient(
     destination_rrno: str,
 ):
     print("Merging %s to %s..." % (source_rrno, destination_rrno))
-    for table in table_desc:
-        print("Merging %s table..." % table)
-        if table == "PATIENT_XREF":
+    for table_name in table_desc:
+        print("Merging %s table..." % table_name)
+        if table_name == "PATIENT_XREF":
             continue
-        
-        key_columns = list(table_desc[table].key_columns)
-        
+
+        key_columns = list(table_desc[table_name].key_columns)
+
         if "RR_NO" in key_columns:
             # We ignore the RR_NO column when comparing rows
             key_columns.remove("RR_NO")
         else:
             # Skip tables that don't contain patient data (i.e. no RR_NO column)
             continue
-        
+
         # Skip tables where the RR_NO is the only key
         # e.g. PATIENTS, EXTERNAL_COMM
         if len(key_columns) == 0:
             continue
         
-        sql = f"SELECT {', '.join(key_columns)} FROM {table} WHERE RR_NO = :RR_NO"
-        
+        schema = None
+        metadata = MetaData()
+        table = Table(
+            table_name,
+            metadata,
+            schema=schema,
+            autoload_with=session.get_bind(),
+        )
+
+        columns =  [table.c[c] for c in key_columns]
+        statement = select(*columns).where(table.c.RR_NO == bindparam("RR_NO"))
+
         print(f"Getting source data from {table}...")
         # Get data for source patient
-        result = session.execute(text(sql), {"RR_NO": source_rrno})
-        # Convert to a python list for row equality checking
-        src_rows = [list(x) for x in result.fetchall()]
-        
+        result = session.execute(statement, {"RR_NO": source_rrno})
+        src_rows = [list(row) for row in result.all()]
+
         print(f"Getting destination data from {table}...")
 
         # Get data for destination patient
-        result = session.execute(text(sql), {"RR_NO": destination_rrno})
-        dest_rows = [list(x) for x in result.fetchall()]
-        
-        update_sql = (
-            f"UPDATE {table} "
-            f"SET RR_NO = :DEST_RR_NO "
-            f"WHERE RR_NO = :SRC_RR_NO "
-            + " ".join(f"AND {c} = :{c}" for c in key_columns)
+        result = session.execute(statement, {"RR_NO": destination_rrno})
+        dest_rows = [list(row) for row in result.all()]
+
+        update_statement = (
+            update(table)
+            .where(table.c.RR_NO == bindparam("SRC_RR_NO"))
+            .where(*(table.c[c] == bindparam(c) for c in key_columns))
+            .values(RR_NO=bindparam("DEST_RR_NO"))
         )
 
         print(f"Updating {table}...")
-        
+
         for src_row in src_rows:
             # Skip ESRF rows that were automatically created by the
             # validation (HOSP_CENTRE is set to 999)
-            if table == "ESRF" and src_row[0] == "999":
+            if table_name == "ESRF" and src_row[0] == "999":
                 continue
 
             # Check if destination patient already has a row matching
@@ -104,11 +114,8 @@ def merge_patient(
             params.update(dict(list(zip(key_columns, src_row))))
 
             try:
-                result = session.execute(text(update_sql), params)
+                result = session.execute(update_statement, params)
             except Exception:
-                # Print the exception
-                import traceback
-
                 traceback.print_exc()
 
                 raise MergePatientError(
@@ -118,7 +125,7 @@ def merge_patient(
                     )
                 )
 
-            if result.rowcount != 1:
+            if result.rowcount != 1: # type: ignore[attr-defined]
                 msg = (
                     "Expected to update 1 row from {table} "
                     "({row}) but actually updated {count} rows"
@@ -127,7 +134,7 @@ def merge_patient(
                     msg.format(
                         table=table,
                         row=row_to_str(source_rrno, key_columns, src_row),
-                        count=result.rowcount,
+                        count=result.rowcount, 
                     )
                 )
 
@@ -139,6 +146,7 @@ def merge_patient(
                     dest_rrno=destination_rrno,
                 )
             )
+
 
 def delete_patient(
     session: Session,
