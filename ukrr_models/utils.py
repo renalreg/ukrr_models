@@ -1,7 +1,6 @@
 import argparse
-from typing import Optional
-
 from sqlalchemy import select
+from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func, cast, Date, text
@@ -15,9 +14,9 @@ def audit_date_expression():
 
 
 def audit_time_expression():
-    ''' 
+    """
     Return time in format 1945 (for 19:45) or 0705 (for 07:05)
-    '''
+    """
     return text(
         "RIGHT('0' + CAST(DATEPART(hour, GETDATE()) AS VARCHAR(2)), 2) + "
         "RIGHT('0' + CAST(DATEPART(minute, GETDATE()) AS VARCHAR(2)), 2)"
@@ -48,7 +47,7 @@ def delete_patient(
     rename_map = {
         "NEW_NHS_NO": "NHS_NO",
     }
-    
+
     # Find list of columns we need to copy from PATIENTS to DELETED_PATIENTS
     patient_columns = {c.key for c in UKRRPatient.__table__.columns}
     deleted_patient_columns = {c.key for c in UKRR_Deleted_Patient.__table__.columns}
@@ -57,7 +56,8 @@ def delete_patient(
     print("Adding %s to DELETED_PATIENTS..." % rrno)
 
     patinet_params: dict[str, object] = {
-        rename_map.get(col, col): getattr(patient, rename_map.get(col, col)) for col in shared_cols
+        rename_map.get(col, col): getattr(patient, rename_map.get(col, col))
+        for col in shared_cols
     }
 
     patinet_params.update(
@@ -69,12 +69,12 @@ def delete_patient(
         }
     )
 
-    deleted_patient_params = {
+    deleted_patient_params: dict[str, Any] = {
         key: value
         for key, value in patinet_params.items()
         if key in deleted_patient_columns
     }
-        
+
     deleted_patient = UKRR_Deleted_Patient(**deleted_patient_params)
     deleted_patient.audit_date = audit_date_expression()
     deleted_patient.audit_time = audit_time_expression()

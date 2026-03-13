@@ -43,7 +43,7 @@ class UKRRPatient(Base):
 
     UKTSSA_NO: Mapped[int] = mapped_column(Integer)
     uk_tssa_no: Mapped[int] = synonym("UKTSSA_NO")
-    
+
     LOCAL_HOSP_NO: Mapped[str] = mapped_column("LOCAL_HOSP_NO", String)
     local_hosp_no: Mapped[str] = synonym("LOCAL_HOSP_NO")
 
@@ -174,16 +174,18 @@ class UKRR_Deleted_Patient(Base):
 
     HOSP_CENTRE: Mapped[str] = mapped_column(String)
     hosp_centre: Mapped[str] = synonym("HOSP_CENTRE")
-    
-    RR_NO: Mapped[int] = mapped_column("RR_NO", Integer, primary_key=True, autoincrement=False)
+
+    RR_NO: Mapped[int] = mapped_column(
+        "RR_NO", Integer, primary_key=True, autoincrement=False
+    )
     rr_no: Mapped[int] = synonym("RR_NO")
 
     SURNAME: Mapped[str] = mapped_column("SURNAME", String)
     surname: Mapped[str] = synonym("SURNAME")
-    
+
     FORENAME: Mapped[str] = mapped_column("FORENAME", String)
     forename: Mapped[str] = synonym("FORENAME")
-    
+
     SEX: Mapped[str] = mapped_column("SEX", String)
     sex: Mapped[str] = synonym("OPT_OUT_FLAG")
 
@@ -195,10 +197,10 @@ class UKRR_Deleted_Patient(Base):
 
     HSC_NO: Mapped[int] = mapped_column("HSC_NO", Integer)
     hsc_no: Mapped[int] = synonym("HSC_NO")
-    
+
     UKTSSA_NO: Mapped[int] = mapped_column("UKTSSA_NO", Integer)
     uk_tssa_no: Mapped[int] = synonym("UKTSSA_NO")
-    
+
     LOCAL_HOSP_NO: Mapped[str] = mapped_column("LOCAL_HOSP_NO", String)
     local_hosp_no: Mapped[str] = synonym("LOCAL_HOSP_NO")
 
