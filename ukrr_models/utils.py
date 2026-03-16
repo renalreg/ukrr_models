@@ -1,8 +1,9 @@
 import argparse
-import traceback
-from typing import Optional
+from sqlalchemy import select
+from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func, cast, Date, text
 from rr_database.sqlserver import SQLServerDatabase
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
 from sqlalchemy import (
@@ -22,9 +23,12 @@ def audit_date_expression():
 
 
 def audit_time_expression():
-    return func.concat(
-        func.datepart("hour", func.getdate()),
-        func.datepart("minute", func.getdate()),
+    """
+    Return time in format 1945 (for 19:45) or 0705 (for 07:05)
+    """
+    return text(
+        "RIGHT('0' + CAST(DATEPART(hour, GETDATE()) AS VARCHAR(2)), 2) + "
+        "RIGHT('0' + CAST(DATEPART(minute, GETDATE()) AS VARCHAR(2)), 2)"
     )
 
 
@@ -173,6 +177,11 @@ def delete_patient(
     if patient is None:
         raise DeletePatientError(f"Patient (RR_NO={rrno}) not found")
 
+    # Column is called NHS_NO in the model, but NEW_NHS_NO in the DB
+    rename_map = {
+        "NEW_NHS_NO": "NHS_NO",
+    }
+
     # Find list of columns we need to copy from PATIENTS to DELETED_PATIENTS
     patient_columns = {c.key for c in UKRRPatient.__table__.columns}
     deleted_patient_columns = {c.key for c in UKRR_Deleted_Patient.__table__.columns}
@@ -181,7 +190,8 @@ def delete_patient(
     print("Adding %s to DELETED_PATIENTS..." % rrno)
 
     patinet_params: dict[str, object] = {
-        col: getattr(patient, col) for col in shared_cols
+        rename_map.get(col, col): getattr(patient, rename_map.get(col, col))
+        for col in shared_cols
     }
 
     patinet_params.update(
@@ -193,7 +203,7 @@ def delete_patient(
         }
     )
 
-    deleted_patient_params = {
+    deleted_patient_params: dict[str, Any] = {
         key: value
         for key, value in patinet_params.items()
         if key in deleted_patient_columns
@@ -227,7 +237,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    database = SQLServerDatabase.connect(server="RR-SQL-Live", database="renalreg")
+    database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
     with database.session as session:
         print(
