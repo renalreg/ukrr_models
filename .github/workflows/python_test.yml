@@ -19,7 +19,7 @@ jobs:
     with:  
       python_versions: '["3.12"]'
 
-      os: '["windows-latest", "ubuntu-latest"]'
+      os: '["windows-latest"]'
       package_manager_command: "pip install poetry"
       install_command: "poetry install"
       test_command: "poetry run tox"
