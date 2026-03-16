@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    database = SQLServerDatabase.connect(server="RR-SQL-Test", database="renalreg")
+    database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
     with database.session as session:
         print(

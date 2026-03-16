@@ -212,7 +212,18 @@ class UKRR_Deleted_Patient(Base):
 
     audit_date: Mapped[Optional[datetime]] = mapped_column("AUDIT_DATE", DateTime)
     audit_time: Mapped[Optional[int]] = mapped_column("AUDIT_TIME", Numeric(8, 0))
-
+    
+    AUTHORISED_BY: Mapped[str] = mapped_column("AUTHORISED_BY", String)
+    authorised_by: Mapped[str] = synonym("AUTHORISED_BY")
+    
+    USERNAME: Mapped[str] = mapped_column("USERNAME", String)
+    username: Mapped[str] = synonym("USERNAME")
+    
+    DESCRIPTION: Mapped[str] = mapped_column("DESCRIPTION", String)
+    description: Mapped[str] = synonym("DESCRIPTION")
+    
+    DUPLICATE_RR_NO: Mapped[Optional[int]] = mapped_column("DUPLICATE_RR_NO", Integer)
+    duplicate_rr_no: Mapped[Optional[int]] = synonym("DUPLICATE_RR_NO")
 
 class QuarterlyTreatment(Base):
     __tablename__ = "QUARTERLY_TREATMENT"
