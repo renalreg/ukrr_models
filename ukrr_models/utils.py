@@ -1,4 +1,5 @@
 import argparse
+import traceback
 from sqlalchemy import select
 from typing import Optional, Any
 from sqlalchemy.orm import Session
@@ -230,24 +231,48 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--rrno", required=True)
-    parser.add_argument("--username", required=True)
-    parser.add_argument("--authorised-by", required=True)
-    parser.add_argument("--reason", required=True)
+    parser.add_argument("--username", required=False)
+    parser.add_argument("--authorised-by", required=False)
+    parser.add_argument("--reason", required=False)
     parser.add_argument("--duplicate-rrno", required=False)
+    
+    # Merge-specific args
+    parser.add_argument("--merge", action="store_true")
+    parser.add_argument("--destination-rrno", required=False)
 
     args = parser.parse_args()
 
     database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
+    
     with database.session as session:
-        print(
-            f"Deleting patient {args.rrno}, authorised by {args.authorised_by} for reason {args.reason}"
-        )
-        delete_patient(
-            session=session,
-            rrno=args.rrno,
-            username=args.username,
-            authorised_by=args.authorised_by,
-            reason=args.reason,
-            duplicate_rrno=args.duplicate_rrno,
-        )
+        if args.merge:
+            if not args.rrno or not args.destination_rrno:
+                parser.error("--merge requires --rrno and --destination-rrno")
+
+            print(
+                f"Merging patient {args.rrno} into {args.destination_rrno}"
+            )
+            merge_patient(
+                session=session,
+                table_desc=table_desc,
+                source_rrno=args.rrno,
+                destination_rrno=args.destination_rrno,
+            )
+        else:
+            if not args.rrno or not args.username or not args.authorised_by or not args.reason:
+                parser.error(
+                    "delete mode requires --rrno --username --authorised-by --reason --duplicate-rrno"
+                )
+
+            print(
+                f"Deleting patient {args.rrno}, authorised by {args.authorised_by} for reason {args.reason}"
+            )
+            delete_patient(
+                session=session,
+                rrno=args.rrno,
+                username=args.username,
+                authorised_by=args.authorised_by,
+                reason=args.reason,
+                duplicate_rrno=args.duplicate_rrno,
+            )
