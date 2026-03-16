@@ -7,9 +7,9 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.12,<3.14"
 sqlalchemy = "^2.0.0"
-rr-database = {git = "ssh://git@github.com/renalreg/rr_database.git"}
+rr-database = {git = "https://github.com/renalreg/rr_database.git"}
 
 
 [tool.poetry.group.dev.dependencies]
