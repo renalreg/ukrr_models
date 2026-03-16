@@ -1,45 +1,12 @@
 import argparse
 import traceback
+from sqlalchemy import text
 from sqlalchemy import select
 from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import func, cast, Date, text
 from rr_database.sqlserver import SQLServerDatabase
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
-from sqlalchemy import (
-    func,
-    cast,
-    Date,
-    MetaData,
-    Table,
-    bindparam,
-    select,
-    update,
-)
-
-
-def audit_date_expression():
-    return cast(func.getdate(), Date)
-
-
-def audit_time_expression():
-    """
-    Return time in format 1945 (for 19:45) or 0705 (for 07:05)
-    """
-    return text(
-        "RIGHT('0' + CAST(DATEPART(hour, GETDATE()) AS VARCHAR(2)), 2) + "
-        "RIGHT('0' + CAST(DATEPART(minute, GETDATE()) AS VARCHAR(2)), 2)"
-    )
-
-
-def row_to_str(rrno, keys, values) -> str:
-    """Format a row as a string."""
-    # Add RR_NO to the start
-    keys = ["RR_NO"] + keys
-    values = [rrno] + values
-
-    return ", ".join(["%s=%s" % (k, v) for k, v in zip(keys, values)])
 
 
 class DeletePatientError(Exception):
@@ -169,6 +136,8 @@ def delete_patient(
     authorised_by: str,
     reason: str,
     duplicate_rrno: Optional[str] = None,
+    audit_date: Optional[str] = None,
+    audit_time: Optional[str] = None,
 ):
     """Delete a patient."""
     print(f"Deleting {rrno}...")
@@ -190,12 +159,12 @@ def delete_patient(
 
     print("Adding %s to DELETED_PATIENTS..." % rrno)
 
-    patinet_params: dict[str, object] = {
+    patient_params: dict[str, object] = {
         rename_map.get(col, col): getattr(patient, rename_map.get(col, col))
         for col in shared_cols
     }
 
-    patinet_params.update(
+    patient_params.update(
         {
             "USERNAME": username,
             "AUTHORISED_BY": authorised_by,
@@ -206,13 +175,13 @@ def delete_patient(
 
     deleted_patient_params: dict[str, Any] = {
         key: value
-        for key, value in patinet_params.items()
+        for key, value in patient_params.items()
         if key in deleted_patient_columns
     }
 
     deleted_patient = UKRR_Deleted_Patient(**deleted_patient_params)
-    deleted_patient.audit_date = audit_date_expression()
-    deleted_patient.audit_time = audit_time_expression()
+    deleted_patient.audit_date = audit_date
+    deleted_patient.audit_time = audit_time
 
     try:
         session.add(deleted_patient)
@@ -220,6 +189,7 @@ def delete_patient(
         session.commit()
     except SQLAlchemyError:
         session.rollback()
+        traceback.print_exc()
         raise DeletePatientError(
             f"Error adding patient (RR_NO={rrno}) to DELETED_PATIENTS"
         )
@@ -245,6 +215,9 @@ if __name__ == "__main__":
     database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
     
+    # Audit datetime metadata
+    audit_date = text(database.audit_date()) 
+    audit_time = text(database.audit_time())
     with database.session as session:
         if args.merge:
             if not args.rrno or not args.destination_rrno:
@@ -275,4 +248,6 @@ if __name__ == "__main__":
                 authorised_by=args.authorised_by,
                 reason=args.reason,
                 duplicate_rrno=args.duplicate_rrno,
+                audit_date=audit_date,
+                audit_time=audit_time,
             )
