@@ -55,12 +55,12 @@ def delete_patient(
 
     print("Adding %s to DELETED_PATIENTS..." % rrno)
 
-    patinet_params: dict[str, object] = {
+    patient_params: dict[str, object] = {
         rename_map.get(col, col): getattr(patient, rename_map.get(col, col))
         for col in shared_cols
     }
 
-    patinet_params.update(
+    patient_params.update(
         {
             "USERNAME": username,
             "AUTHORISED_BY": authorised_by,
