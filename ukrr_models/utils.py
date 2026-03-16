@@ -1,11 +1,11 @@
 import argparse
 import traceback
 from sqlalchemy import text
-from sqlalchemy import select
 from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from rr_database.sqlserver import SQLServerDatabase
+from sqlalchemy import select, update, bindparam, Table, MetaData
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
 
 
@@ -15,6 +15,15 @@ class DeletePatientError(Exception):
 
 class MergePatientError(Exception):
     pass
+
+
+def row_to_str(rrno, keys, values) -> str:
+    """Format a row as a string."""
+    # Add RR_NO to the start
+    keys = ["RR_NO"] + keys
+    values = [rrno] + values
+
+    return ", ".join(["%s=%s" % (k, v) for k, v in zip(keys, values)])
 
 
 def merge_patient(
@@ -69,7 +78,7 @@ def merge_patient(
         update_statement = (
             update(table)
             .where(table.c.RR_NO == bindparam("SRC_RR_NO"))
-            .where(*(table.c[c] == bindparam(c) for c in key_columns))
+            .where(*(table.c[c] == bindparam(f"w_{c}") for c in key_columns))
             .values(RR_NO=bindparam("DEST_RR_NO"))
         )
 
@@ -92,11 +101,14 @@ def merge_patient(
                 "SRC_RR_NO": source_rrno,
                 "DEST_RR_NO": destination_rrno,
             }
-            params.update(dict(list(zip(key_columns, src_row))))
-
+            params.update(
+                {f"w_{col}": value for col, value in zip(key_columns, src_row)}
+            )
             try:
                 result = session.execute(update_statement, params)
+                session.commit()
             except Exception:
+                session.rollback()
                 traceback.print_exc()
 
                 raise MergePatientError(
@@ -205,7 +217,7 @@ if __name__ == "__main__":
     parser.add_argument("--authorised-by", required=False)
     parser.add_argument("--reason", required=False)
     parser.add_argument("--duplicate-rrno", required=False)
-    
+
     # Merge-specific args
     parser.add_argument("--merge", action="store_true")
     parser.add_argument("--destination-rrno", required=False)
@@ -214,18 +226,16 @@ if __name__ == "__main__":
 
     database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
-    
+
     # Audit datetime metadata
-    audit_date = text(database.audit_date()) 
+    audit_date = text(database.audit_date())
     audit_time = text(database.audit_time())
     with database.session as session:
         if args.merge:
             if not args.rrno or not args.destination_rrno:
                 parser.error("--merge requires --rrno and --destination-rrno")
 
-            print(
-                f"Merging patient {args.rrno} into {args.destination_rrno}"
-            )
+            print(f"Merging patient {args.rrno} into {args.destination_rrno}")
             merge_patient(
                 session=session,
                 table_desc=table_desc,
@@ -233,7 +243,12 @@ if __name__ == "__main__":
                 destination_rrno=args.destination_rrno,
             )
         else:
-            if not args.rrno or not args.username or not args.authorised_by or not args.reason:
+            if (
+                not args.rrno
+                or not args.username
+                or not args.authorised_by
+                or not args.reason
+            ):
                 parser.error(
                     "delete mode requires --rrno --username --authorised-by --reason --duplicate-rrno"
                 )
