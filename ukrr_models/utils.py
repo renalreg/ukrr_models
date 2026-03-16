@@ -1,28 +1,12 @@
 import argparse
 import traceback
+from sqlalchemy import text
 from sqlalchemy import select
 from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import func, cast, Date, text
 from rr_database.sqlserver import SQLServerDatabase
-
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
-
-
-def audit_date_expression():
-    return cast(func.getdate(), Date)
-
-
-def audit_time_expression():
-    """
-    Return time in format 1945 (for 19:45) or 0705 (for 07:05)
-    """
-    return text(
-        "RIGHT('0' + CAST(DATEPART(hour, GETDATE()) AS VARCHAR(2)), 2) + "
-        "RIGHT('0' + CAST(DATEPART(minute, GETDATE()) AS VARCHAR(2)), 2)"
-    )
-
 
 class DeletePatientError(Exception):
     pass
@@ -35,6 +19,8 @@ def delete_patient(
     authorised_by: str,
     reason: str,
     duplicate_rrno: Optional[str] = None,
+    audit_date: Optional[str] = None,
+    audit_time: Optional[str] = None,
 ):
     """Delete a patient."""
     print(f"Deleting {rrno}...")
@@ -77,8 +63,8 @@ def delete_patient(
     }
 
     deleted_patient = UKRR_Deleted_Patient(**deleted_patient_params)
-    deleted_patient.audit_date = audit_date_expression()
-    deleted_patient.audit_time = audit_time_expression()
+    deleted_patient.audit_date = audit_date
+    deleted_patient.audit_time = audit_time
 
     try:
         session.add(deleted_patient)
@@ -107,6 +93,10 @@ if __name__ == "__main__":
 
     database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
+    
+    # Audit datetime metadata
+    audit_date = text(database.audit_date()) 
+    audit_time = text(database.audit_time())
     with database.session as session:
         print(
             f"Deleting patient {args.rrno}, authorised by {args.authorised_by} for reason {args.reason}"
@@ -118,4 +108,6 @@ if __name__ == "__main__":
             authorised_by=args.authorised_by,
             reason=args.reason,
             duplicate_rrno=args.duplicate_rrno,
+            audit_date=audit_date,
+            audit_time=audit_time,
         )
