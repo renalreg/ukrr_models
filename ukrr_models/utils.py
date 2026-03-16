@@ -1,4 +1,5 @@
 import argparse
+import traceback
 from sqlalchemy import select
 from typing import Optional, Any
 from sqlalchemy.orm import Session
@@ -71,7 +72,7 @@ def delete_patient(
 
     deleted_patient_params: dict[str, Any] = {
         key: value
-        for key, value in patinet_params.items()
+        for key, value in patient_params.items()
         if key in deleted_patient_columns
     }
 
@@ -85,6 +86,7 @@ def delete_patient(
         session.commit()
     except SQLAlchemyError:
         session.rollback()
+        traceback.print_exc()
         raise DeletePatientError(
             f"Error adding patient (RR_NO={rrno}) to DELETED_PATIENTS"
         )
