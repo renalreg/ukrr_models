@@ -4,6 +4,7 @@ from sqlalchemy import text
 from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql.elements import TextClause
 from rr_database.sqlserver import SQLServerDatabase
 from sqlalchemy import select, update, bindparam, Table, MetaData
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
@@ -127,7 +128,7 @@ def merge_patient(
                     msg.format(
                         table=table,
                         row=row_to_str(source_rrno, key_columns, src_row),
-                        count=result.rowcount,
+                        count=result.rowcount,  # type: ignore[attr-defined]
                     )
                 )
 
@@ -148,8 +149,8 @@ def delete_patient(
     authorised_by: str,
     reason: str,
     duplicate_rrno: Optional[str] = None,
-    audit_date: Optional[str] = None,
-    audit_time: Optional[str] = None,
+    audit_date: Optional[TextClause] = None,
+    audit_time: Optional[TextClause] = None,
 ):
     """Delete a patient."""
     print(f"Deleting {rrno}...")
@@ -192,8 +193,9 @@ def delete_patient(
     }
 
     deleted_patient = UKRR_Deleted_Patient(**deleted_patient_params)
-    deleted_patient.audit_date = audit_date
-    deleted_patient.audit_time = audit_time
+    # SQLA is able to send an SQL expression into INSERT statement
+    deleted_patient.audit_date = audit_date  # type: ignore[assignment]
+    deleted_patient.audit_time = audit_time  # type: ignore[assignment]
 
     try:
         session.add(deleted_patient)
