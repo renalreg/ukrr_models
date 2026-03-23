@@ -5,9 +5,10 @@ from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.elements import TextClause
+from rr_common.rr_general_utils import rr_sqldata
 from rr_database.sqlserver import SQLServerDatabase
-from sqlalchemy import select, update, bindparam, Table, MetaData
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
+from sqlalchemy import select, update, bindparam, Table, MetaData, and_, func, insert, delete
 
 
 class DeletePatientError(Exception):
@@ -26,7 +27,185 @@ def row_to_str(rrno, keys, values) -> str:
 
     return ", ".join(["%s=%s" % (k, v) for k, v in zip(keys, values)])
 
+def restore(
+        session,
+        ouf,
+        table,
+        audit_data,
+        audit_desc,
+        main_definition,
+        keep_rrno,
+        merged_rrno=False,
+        update=False,
+        audit_hosp_centre="",
+    ):
+        """Copy back data from the AUDIT_table to the table ie. undelete."""
+        main_desc = main_definition.description
+        main_keys = main_definition.key_columns
+        main_list = []
+        unique_audit_data = []
+        for record in audit_data:
+            if record not in unique_audit_data:
+                unique_audit_data.append(record)
+            else:
+                print("Duplicate audit record found and removed", table, rec)
+                ouf.write(
+                    "Duplicate audit record found and removed "
+                    + table
+                    + " "
+                    + str(rec)
+                    + "\n"
+                )
+        main_list = [column.name for column in main_desc]
+        audit_list = [column[0] for column in audit_desc]
+        for rec in unique_audit_data:
+            values = {}
 
+            for field in main_list:
+                # position of this field in the audit record
+                audit_order = audit_list.index(field)
+                value = rec[audit_order]
+
+                if field == "HOSP_CENTRE" and (value is None or value == ""):
+                    if audit_hosp_centre != "":
+                        value = audit_hosp_centre
+                    else:
+                        value = "XXX"
+
+                values[field] = value
+
+            statement = insert(table).values(**values)
+            session.execute(statement)
+
+            if update:
+                session.commit()
+                
+            # Now work out if the record we have just undeleted
+            # was copied to the merged_patient
+            if keep_rrno and table != "PATIENTS":
+                audit_position = {name: i for i, name in enumerate(audit_list)}
+
+                conditions = []
+                for key in main_keys:
+                    if key == "RR_NO":
+                        value = keep_rrno
+                    else:
+                        value = record[audit_position[key]]
+
+                    conditions.append(table.c[key] == value)
+
+                statement = select(table).where(and_(*conditions))
+
+                result = session.execute(statement)
+                data = result.fetchall()
+                if len(data) > 0:
+                    ouf.write(
+                        "Merged patient keys match in "
+                        + table
+                        + " where "
+                        + str(conditions)
+                        + "will be deleted if data identical\n"
+                    )
+                    # Now check that it's identical
+                    merged_record = data[0]
+                    same = True
+                    for order, field in enumerate(main_list):
+                        # Find the postion of the data in the audit record
+                        # for the merged data field
+                        audit_order = audit_list.index(field)
+                        if rr_sqldata(merged_record[order]) != rr_sqldata(
+                            record[audit_order]
+                        ):
+                            same = False
+                            break
+                    if same:
+                        statement = delete(table).where(and_(*conditions))
+                        ouf.write(str(statement) + "\n")
+                        session.execute(statement)
+                        if update:
+                            session.commit()
+
+def undelete_patient(
+    session: Session,
+    table_desc,
+    rrno: str,
+):
+    print("Undeleting %s..." % rrno)
+    tables = list(table_desc.keys())
+
+    # Make sure patients first
+    del tables[tables.index("PATIENTS")]
+    tables.insert(0, "PATIENTS")
+    # Remove the Deleted Patients table as this isn't used (Audit_Patients is used instead).
+    tables.remove("DELETED_PATIENTS")
+    
+    ouf = open(
+        "S:\\Resurrected_Patients\\registry_resurrect_"
+        + str(rrno)
+        + ".txt",
+        "w",
+    )
+    
+    for table_name in tables:
+        audit_table_name = "AUDIT_" + table_name
+        schema = None
+        metadata = MetaData()
+        
+        audit_table = Table(
+            audit_table_name,
+            metadata,
+            schema=schema,
+            autoload_with=session.get_bind(),
+        )
+        
+        statement = (
+            select(audit_table)
+            .where(
+                and_(
+                    audit_table.c.RR_NO == bindparam("RR_NO"),
+                    audit_table.c.AUDIT_STATUS == "D",
+                    func.datepart("yy", audit_table.c.AUDIT_DATE) == func.datepart("yy", bindparam("AUDIT_DATE")),
+                    func.datepart("mm", audit_table.c.AUDIT_DATE) == func.datepart("mm", bindparam("AUDIT_DATE")),
+                    func.datepart("dd", audit_table.c.AUDIT_DATE) == func.datepart("dd", bindparam("AUDIT_DATE")),
+                )
+            )
+        )
+        try:
+            result = session.execute(
+                statement,
+                {
+                    "RR_NO": rrno,
+                    "AUDIT_DATE": audit_date,
+                },
+            )
+            rows = result.fetchall()
+        except Exception:
+            print("Problem querying", audit_table)
+            raise
+        
+        if len(rows) >= 0: # type: ignore[attr-defined]
+            print("Status=D", audit_table, len(rows))
+            ouf.write(
+                "Status=D "
+                + audit_table_name
+                + " audit records="
+                + str(len(rows))
+                + "\n"
+            )
+            
+            restore(
+                session=session,
+                ouf=ouf,
+                table=table_name,
+                audit_data=rows,
+                audit_desc=result.keys(),
+                main_definition=table_desc[table_name],
+                keep_rrno=True,
+                merged_rrno=False,
+                update=False,
+                audit_hosp_centre="TEST",
+            )
+            
 def merge_patient(
     session: Session,
     table_desc,

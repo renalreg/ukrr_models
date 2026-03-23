@@ -10,7 +10,7 @@ readme = "README.md"
 python = ">=3.12,<3.14"
 sqlalchemy = "^2.0.0"
 rr-database = {git = "https://github.com/renalreg/rr_database.git"}
-
+rr-common = { git = "https://github.com/renalreg/rr_common.git" }
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.4"
