@@ -63,18 +63,22 @@ def restore(
     main_list = []
     unique_audit_data = []
 
-    for record in audit_data:
-        if record not in unique_audit_data:
-            unique_audit_data.append(record)
-        else:
-            print("Duplicate audit record found and removed", table_name, record)
-            ouf.write(
-                "Duplicate audit record found and removed "
-                + table_name
-                + " "
-                + str(record)
-                + "\n"
-            )
+    if table_name != "PATIENTS": 
+        for record in audit_data:
+            if record not in unique_audit_data:
+                unique_audit_data.append(record)
+            else:
+                print("Duplicate audit record found and removed", table_name, record)
+                ouf.write(
+                    "Duplicate audit record found and removed "
+                    + table_name
+                    + " "
+                    + str(record)
+                    + "\n"
+                )
+    else: # If table is PATIENT, restore only the most recent row to preserve the PKs
+        unique_audit_data = [audit_data[0]] 
+
     main_list = [column.name for column in main_desc]
     audit_list = [column for column in audit_desc]
     for record in unique_audit_data:
