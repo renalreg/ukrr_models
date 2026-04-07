@@ -63,7 +63,7 @@ def restore(
     main_list = []
     unique_audit_data = []
 
-    if table_name != "PATIENTS": 
+    if table_name != "PATIENTS":
         for record in audit_data:
             if record not in unique_audit_data:
                 unique_audit_data.append(record)
@@ -76,8 +76,8 @@ def restore(
                     + str(record)
                     + "\n"
                 )
-    else: # If table is PATIENT, restore only the most recent row to preserve the PKs
-        unique_audit_data = [audit_data[0]] 
+    else:  # If table is PATIENT, restore only the most recent row to preserve the PKs
+        unique_audit_data = [audit_data[0]]
 
     main_list = [column.name for column in main_desc]
     audit_list = [column for column in audit_desc]
@@ -114,7 +114,7 @@ def restore(
         else:
             session.rollback()
 
-        # Now work out if the record we have just undeleted
+        # Now work out if the record we have just undeleted was copied to the merged_patient
         if keep_rrno and table != "PATIENTS":
             audit_position = {name: i for i, name in enumerate(audit_list)}
 
@@ -185,8 +185,8 @@ def undelete_patient(
         output_dir + "registry_resurrect_" + str(rrno) + ".txt",
         "w",
     )
-    tables = ["PATIENTS"]
     for table_name in tables:
+        print(f"Undeleting from table {table_name}")
         audit_table_name = "AUDIT_" + table_name
         schema = None
         metadata = MetaData()
@@ -215,11 +215,12 @@ def undelete_patient(
                 },
             )
             rows = result.fetchall()
+            print(f"{len(rows)} results fetched from the {audit_table_name} table")
         except Exception:
             print("Problem querying", audit_table)
             raise
 
-        if len(rows) >= 0:  # type: ignore[attr-defined]
+        if len(rows) > 0:  # type: ignore[attr-defined]
             print("Status=D", audit_table, len(rows))
             ouf.write(
                 "Status=D "
@@ -240,6 +241,8 @@ def undelete_patient(
                 update=update,
                 audit_hosp_centre=audit_hosp_centre,
             )
+
+    print("Undelition finished, clearing DELETED_PATIENTS table...")
 
     delete_statement = delete(UKRR_Deleted_Patient).where(
         UKRR_Deleted_Patient.rr_no == rrno
