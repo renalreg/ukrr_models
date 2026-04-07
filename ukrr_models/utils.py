@@ -443,30 +443,39 @@ def delete_patient(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--rrno", required=True)
-    parser.add_argument("--username", required=False)
-    parser.add_argument("--authorised-by", required=False)
-    parser.add_argument("--reason", required=False)
-    parser.add_argument("--duplicate-rrno", required=False)
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # Merge-specific args
-    parser.add_argument("--merge", action="store_true")
-    parser.add_argument("--destination-rrno", required=False)
+    # delete
+    delete_parser = subparsers.add_parser("delete", help="Delete an RR number")
+    delete_parser.add_argument("--rrno", required=True)
+    delete_parser.add_argument("--username", required=False)
+    delete_parser.add_argument("--authorised-by", required=False)
+    delete_parser.add_argument("--reason", required=False)
+    delete_parser.add_argument("--duplicate-rrno", required=False)
+    delete_parser.add_argument("--update", action="store_true")
 
-    # Undelete-specific args
-    parser.add_argument("--undelete", action="store_true")
-    parser.add_argument("--update", action="store_true")
+    # merge
+    merge_parser = subparsers.add_parser(
+        "merge", help="Merge one RR number into another"
+    )
+    merge_parser.add_argument("--rrno", required=True)
+    merge_parser.add_argument("--destination-rrno", required=True)
 
-    args = parser.parse_args()
+    # undelete
+    undelete_parser = subparsers.add_parser("undelete", help="Undelete an RR number")
+    undelete_parser.add_argument("--rrno", required=True)
+    undelete_parser.add_argument("--update", action="store_true")
 
     database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
+
+    args = parser.parse_args()
 
     # Audit datetime metadata
     audit_date = text(database.audit_date())
     audit_time = text(database.audit_time())
     with database.session as session:
-        if args.merge:
+        if args.command == "merge":
             if not args.rrno or not args.destination_rrno:
                 parser.error("--merge requires --rrno and --destination-rrno")
 
@@ -477,7 +486,7 @@ if __name__ == "__main__":
                 source_rrno=args.rrno,
                 destination_rrno=args.destination_rrno,
             )
-        elif args.undelete:
+        elif args.command == "undelete":
             if not args.rrno:
                 parser.error("--undelete requires --rrno")
 
@@ -508,7 +517,7 @@ if __name__ == "__main__":
                 update=args.update,
                 audit_hosp_centre=audit_hosp_centre,
             )
-        else:
+        elif args.command == "delete":
             if (
                 not args.rrno
                 or not args.username
@@ -532,3 +541,5 @@ if __name__ == "__main__":
                 audit_date=audit_date,
                 audit_time=audit_time,
             )
+        else:
+            print("Unknown command, use --help for usage information")
