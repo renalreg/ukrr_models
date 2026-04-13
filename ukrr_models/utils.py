@@ -5,9 +5,21 @@ from typing import Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.elements import TextClause
+from rr_common.rr_general_utils import rr_sqldata
 from rr_database.sqlserver import SQLServerDatabase
-from sqlalchemy import select, update, bindparam, Table, MetaData
 from ukrr_models.rr_models import UKRRPatient, UKRR_Deleted_Patient
+from sqlalchemy import (
+    select,
+    update,
+    bindparam,
+    Table,
+    MetaData,
+    and_,
+    insert,
+    delete,
+    cast,
+    Date,
+)
 
 
 class DeletePatientError(Exception):
@@ -25,6 +37,223 @@ def row_to_str(rrno, keys, values) -> str:
     values = [rrno] + values
 
     return ", ".join(["%s=%s" % (k, v) for k, v in zip(keys, values)])
+
+
+def get_deleted_patients(session: Session, rrno):
+    """Get deleted patient records for a given RR_NO."""
+    statement = select(UKRR_Deleted_Patient).where(UKRR_Deleted_Patient.rr_no == rrno)
+    result = session.execute(statement)
+    return result.scalars().all()
+
+
+def restore(
+    session: Session,
+    ouf,
+    table_name,
+    audit_data,
+    audit_desc,
+    main_definition,
+    keep_rrno,
+    update=False,
+    audit_hosp_centre="",
+):
+    """Copy back data from the AUDIT_{TABLE} to the {TABLE} ie. undelete."""
+    main_desc = main_definition.description
+    main_keys = main_definition.key_columns
+    main_list = []
+    unique_audit_data = []
+
+    if table_name != "PATIENTS":
+        for record in audit_data:
+            if record not in unique_audit_data:
+                unique_audit_data.append(record)
+            else:
+                print("Duplicate audit record found and removed", table_name, record)
+                ouf.write(
+                    "Duplicate audit record found and removed "
+                    + table_name
+                    + " "
+                    + str(record)
+                    + "\n"
+                )
+    else:  # If table is PATIENT, restore only the most recent row to preserve the PKs
+        unique_audit_data = [audit_data[0]]
+
+    main_list = [column.name for column in main_desc]
+    audit_list = [column for column in audit_desc]
+    for record in unique_audit_data:
+        values = {}
+
+        for field in main_list:
+            # position of this field in the audit record
+            audit_order = audit_list.index(field)
+            value = record[audit_order]
+
+            if field == "HOSP_CENTRE" and (value is None or value == ""):
+                if audit_hosp_centre != "":
+                    value = audit_hosp_centre
+                else:
+                    value = "XXX"
+
+            values[field] = value
+
+        schema = None
+        metadata = MetaData()
+        table = Table(
+            table_name,
+            metadata,
+            schema=schema,
+            autoload_with=session.get_bind(),
+        )
+
+        insert_statement = insert(table).values(**values)
+        session.execute(insert_statement)
+
+        if update:
+            session.commit()
+        else:
+            session.rollback()
+
+        # Now work out if the record we have just undeleted was copied to the merged_patient
+        if keep_rrno and table != "PATIENTS":
+            audit_position = {name: i for i, name in enumerate(audit_list)}
+
+            conditions = []
+            for key in main_keys:
+                if key == "RR_NO":
+                    value = keep_rrno
+                else:
+                    value = record[audit_position[key]]
+
+                conditions.append(table.c[key] == value)
+
+            select_statement = select(table).where(and_(*conditions))
+
+            result = session.execute(select_statement)
+            data = result.fetchall()
+            if len(data) > 0:
+                ouf.write(
+                    "Merged patient keys match in "
+                    + table_name
+                    + " where "
+                    + str(conditions)
+                    + "will be deleted if data identical\n"
+                )
+                # Now check that it's identical
+                merged_record = data[0]
+                same = True
+                for order, field in enumerate(main_list):
+                    # Find the postion of the data in the audit record
+                    # for the merged data field
+                    audit_order = audit_list.index(field)
+                    if rr_sqldata(merged_record[order]) != rr_sqldata(
+                        record[audit_order]
+                    ):
+                        same = False
+                        break
+                if same:
+                    statement = delete(table).where(and_(*conditions))
+                    ouf.write(str(statement) + "\n")
+                    session.execute(statement)
+                    if update:
+                        session.commit()
+                    else:
+                        session.rollback()
+
+
+def undelete_patient(
+    session: Session,
+    table_desc,
+    rrno: str,
+    output_dir: str,
+    audit_date: str,
+    keep_rrno: str = "",
+    update: bool = False,
+    audit_hosp_centre: str = "",
+):
+    """Take a deleted patient and "undelete" it using data in audit_* tables"""
+    print("Undeleting %s..." % rrno)
+    tables = list(table_desc.keys())
+
+    # Make sure patients first
+    del tables[tables.index("PATIENTS")]
+    tables.insert(0, "PATIENTS")
+    # Remove the Deleted Patients table as this isn't used (Audit_Patients is used instead).
+    tables.remove("DELETED_PATIENTS")
+
+    ouf = open(
+        output_dir + "registry_resurrect_" + str(rrno) + ".txt",
+        "w",
+    )
+    for table_name in tables:
+        print(f"Undeleting from table {table_name}")
+        audit_table_name = "AUDIT_" + table_name
+        schema = None
+        metadata = MetaData()
+
+        audit_table = Table(
+            audit_table_name,
+            metadata,
+            schema=schema,
+            autoload_with=session.get_bind(),
+        )
+
+        statement = select(audit_table).where(
+            and_(
+                audit_table.c.RR_NO == bindparam("RR_NO"),
+                audit_table.c.AUDIT_STATUS == "D",
+                cast(audit_table.c.AUDIT_DATE, Date)
+                == cast(bindparam("AUDIT_DATE"), Date),
+            )
+        )
+        try:
+            result = session.execute(
+                statement,
+                {
+                    "RR_NO": rrno,
+                    "AUDIT_DATE": audit_date,
+                },
+            )
+            rows = result.fetchall()
+            print(f"{len(rows)} results fetched from the {audit_table_name} table")
+        except Exception:
+            print("Problem querying", audit_table)
+            raise
+
+        if len(rows) > 0:  # type: ignore[attr-defined]
+            print("Status=D", audit_table, len(rows))
+            ouf.write(
+                "Status=D "
+                + audit_table_name
+                + " audit records="
+                + str(len(rows))
+                + "\n"
+            )
+
+            restore(
+                session=session,
+                ouf=ouf,
+                table_name=table_name,
+                audit_data=rows,
+                audit_desc=result.keys(),
+                main_definition=table_desc[table_name],
+                keep_rrno=keep_rrno,
+                update=update,
+                audit_hosp_centre=audit_hosp_centre,
+            )
+
+    print("Undelition finished, clearing DELETED_PATIENTS table...")
+
+    delete_statement = delete(UKRR_Deleted_Patient).where(
+        UKRR_Deleted_Patient.rr_no == rrno
+    )
+    ouf.write(f"{delete_statement}\n")
+    session.execute(delete_statement)
+    if update:
+        print(f"Deleted patient {rrno} from DELETED_PATIENTS")
+        session.commit()
+    else:
+        session.rollback()
 
 
 def merge_patient(
@@ -214,26 +443,39 @@ def delete_patient(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--rrno", required=True)
-    parser.add_argument("--username", required=False)
-    parser.add_argument("--authorised-by", required=False)
-    parser.add_argument("--reason", required=False)
-    parser.add_argument("--duplicate-rrno", required=False)
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # Merge-specific args
-    parser.add_argument("--merge", action="store_true")
-    parser.add_argument("--destination-rrno", required=False)
+    # delete
+    delete_parser = subparsers.add_parser("delete", help="Delete an RR number")
+    delete_parser.add_argument("--rrno", required=True)
+    delete_parser.add_argument("--username", required=False)
+    delete_parser.add_argument("--authorised-by", required=False)
+    delete_parser.add_argument("--reason", required=False)
+    delete_parser.add_argument("--duplicate-rrno", required=False)
+    delete_parser.add_argument("--update", action="store_true")
 
-    args = parser.parse_args()
+    # merge
+    merge_parser = subparsers.add_parser(
+        "merge", help="Merge one RR number into another"
+    )
+    merge_parser.add_argument("--rrno", required=True)
+    merge_parser.add_argument("--destination-rrno", required=True)
+
+    # undelete
+    undelete_parser = subparsers.add_parser("undelete", help="Undelete an RR number")
+    undelete_parser.add_argument("--rrno", required=True)
+    undelete_parser.add_argument("--update", action="store_true")
 
     database = SQLServerDatabase.connect(data_source="RR-SQL-Test", database="renalreg")
     table_desc = database.table_definitions()
+
+    args = parser.parse_args()
 
     # Audit datetime metadata
     audit_date = text(database.audit_date())
     audit_time = text(database.audit_time())
     with database.session as session:
-        if args.merge:
+        if args.command == "merge":
             if not args.rrno or not args.destination_rrno:
                 parser.error("--merge requires --rrno and --destination-rrno")
 
@@ -244,7 +486,38 @@ if __name__ == "__main__":
                 source_rrno=args.rrno,
                 destination_rrno=args.destination_rrno,
             )
-        else:
+        elif args.command == "undelete":
+            if not args.rrno:
+                parser.error("--undelete requires --rrno")
+
+            print(f"Undeleting patient {args.rrno}")
+            deleted_patient = get_deleted_patients(session, args.rrno)[0]
+            audit_surname = deleted_patient.surname
+            audit_forename = deleted_patient.forename
+            audit_dob = deleted_patient.date_birth
+            audit_hosp_centre = deleted_patient.hosp_centre
+            description = deleted_patient.description
+            audit_date = deleted_patient.audit_date
+            duplicate_rrno = deleted_patient.duplicate_rr_no
+
+            if duplicate_rrno:
+                keep_rrno = str(duplicate_rrno)
+            else:
+                keep_rrno = description[description.rfind(" ") + 1 :].replace("/", "")
+                if len(keep_rrno) != 9 or not keep_rrno.isdigit():
+                    keep_rrno = ""
+
+            undelete_patient(
+                session=session,
+                table_desc=table_desc,
+                rrno=args.rrno,
+                output_dir="output/",
+                audit_date=audit_date,
+                keep_rrno=keep_rrno,
+                update=args.update,
+                audit_hosp_centre=audit_hosp_centre,
+            )
+        elif args.command == "delete":
             if (
                 not args.rrno
                 or not args.username
@@ -268,3 +541,5 @@ if __name__ == "__main__":
                 audit_date=audit_date,
                 audit_time=audit_time,
             )
+        else:
+            print("Unknown command, use --help for usage information")

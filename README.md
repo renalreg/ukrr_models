@@ -22,7 +22,33 @@ poetry add ukrr_models
 
 ## Built With
 
-[![SQLAlchemy][SQLAlchemy]][SQLAlchemy-url]
+[![SQLAlchemy][SQLAlchemy]][SQLAlchemy-url] 
+
+## Utils quick guide 
+
+### Deleting patient 
+
+Delete patient with the specified rr_no from the database.
+
+```
+python ukrr_models/utils.py delete --rrno {rr_no} --username {username} --authorised-by {authorised_by} --reason {reason}
+```
+
+### Merge patient 
+
+Move entries in the table for one patient into another.
+
+```
+python ukrr_models/utils.py merge --rrno 123456789 --destination-rrno 123456790
+```
+
+### Undelete patient
+
+Check DELETED_PATIENTS table and re-construct the deleted patient back using data in the AUDIT tables.
+
+```
+python ukrr_models/utils.py undelete --rrno 123456789 --update
+```
 
 ## License
 
