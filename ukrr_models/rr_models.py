@@ -187,7 +187,7 @@ class UKRR_Deleted_Patient(Base):
     forename: Mapped[str] = synonym("FORENAME")
 
     SEX: Mapped[str] = mapped_column("SEX", String)
-    sex: Mapped[str] = synonym("OPT_OUT_FLAG")
+    sex: Mapped[str] = synonym("SEX")
 
     NHS_NO: Mapped[int] = mapped_column("NEW_NHS_NO", Integer)
     nhs_no: Mapped[int] = synonym("NHS_NO")
