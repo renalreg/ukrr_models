@@ -32,17 +32,17 @@ class UKRRPatient(Base):
     SEX: Mapped[str] = mapped_column(String(1))
     sex: Mapped[str] = synonym("SEX")
 
-    NHS_NO: Mapped[int] = mapped_column("NEW_NHS_NO", Integer)
-    nhs_no: Mapped[int] = synonym("NHS_NO")
+    NHS_NO: Mapped[Optional[int]] = mapped_column("NEW_NHS_NO", Integer)
+    nhs_no: Mapped[Optional[int]] = synonym("NHS_NO")
 
-    CHI_NO: Mapped[int] = mapped_column(Integer)
-    chi_no: Mapped[int] = synonym("CHI_NO")
+    CHI_NO: Mapped[Optional[int]] = mapped_column(Integer)
+    chi_no: Mapped[Optional[int]] = synonym("CHI_NO")
 
-    HSC_NO: Mapped[int] = mapped_column(Integer)
-    hsc_no: Mapped[int] = synonym("HSC_NO")
+    HSC_NO: Mapped[Optional[int]] = mapped_column(Integer)
+    hsc_no: Mapped[Optional[int]] = synonym("HSC_NO")
 
-    UKTSSA_NO: Mapped[int] = mapped_column(Integer)
-    uk_tssa_no: Mapped[int] = synonym("UKTSSA_NO")
+    UKTSSA_NO: Mapped[Optional[int]] = mapped_column(Integer)
+    uk_tssa_no: Mapped[Optional[int]] = synonym("UKTSSA_NO")
 
     LOCAL_HOSP_NO: Mapped[str] = mapped_column("LOCAL_HOSP_NO", String)
     local_hosp_no: Mapped[str] = synonym("LOCAL_HOSP_NO")
@@ -50,38 +50,38 @@ class UKRRPatient(Base):
     DATE_BIRTH: Mapped[str] = mapped_column(Date)
     date_birth: Mapped[str] = synonym("DATE_BIRTH")
 
-    DATE_DEATH: Mapped[str] = mapped_column(Date)
-    date_death: Mapped[str] = synonym("DATE_DEATH")
+    DATE_DEATH: Mapped[Optional[str]] = mapped_column(Date)
+    date_death: Mapped[Optional[str]] = synonym("DATE_DEATH")
 
-    ETHNICITY: Mapped[str] = mapped_column("ETHGR_CODE", String)
-    ethnicity: Mapped[str] = synonym("ETHNICITY")
+    ETHNICITY: Mapped[Optional[str]] = mapped_column("ETHGR_CODE", String)
+    ethnicity: Mapped[Optional[str]] = synonym("ETHNICITY")
 
-    BLOOD_GROUP: Mapped[str] = mapped_column(String)
-    blood_group: Mapped[str] = synonym("BLOOD_GROUP")
+    BLOOD_GROUP: Mapped[Optional[str]] = mapped_column(String)
+    blood_group: Mapped[Optional[str]] = synonym("BLOOD_GROUP")
 
-    BLOOD_RHESUS: Mapped[str] = mapped_column("BLOOD_GROUP_RHESUS", String)
-    blood_rhesus: Mapped[str] = synonym("BLOOD_RHESUS")
+    BLOOD_RHESUS: Mapped[Optional[str]] = mapped_column("BLOOD_GROUP_RHESUS", String)
+    blood_rhesus: Mapped[Optional[str]] = synonym("BLOOD_RHESUS")
 
-    COD_READ: Mapped[str] = mapped_column(String)
-    cod_read: Mapped[str] = synonym("COD_READ")
+    COD_READ: Mapped[Optional[str]] = mapped_column(String)
+    cod_read: Mapped[Optional[str]] = synonym("COD_READ")
 
-    COD_EDTA1: Mapped[str] = mapped_column(String)
-    cod_edta1: Mapped[str] = synonym("COD_EDTA1")
+    COD_EDTA1: Mapped[Optional[str]] = mapped_column(String)
+    cod_edta1: Mapped[Optional[str]] = synonym("COD_EDTA1")
 
-    COD_EDTA2: Mapped[str] = mapped_column(String)
-    cod_edta2: Mapped[str] = synonym("COD_EDTA2")
+    COD_EDTA2: Mapped[Optional[str]] = mapped_column(String)
+    cod_edta2: Mapped[Optional[str]] = synonym("COD_EDTA2")
 
-    COD_TEXT: Mapped[str] = mapped_column(String)
-    cod_text: Mapped[str] = synonym("COD_TEXT")
+    COD_TEXT: Mapped[Optional[str]] = mapped_column(String)
+    cod_text: Mapped[Optional[str]] = synonym("COD_TEXT")
 
-    DATE_REGISTERED: Mapped[str] = mapped_column(Date)
-    date_registered: Mapped[str] = synonym("DATE_REGISTERED")
+    DATE_REGISTERED: Mapped[Optional[str]] = mapped_column(Date)
+    date_registered: Mapped[Optional[str]] = synonym("DATE_REGISTERED")
 
-    FIRST_SEEN_DATE: Mapped[str] = mapped_column(Date)
-    first_seen_date: Mapped[str] = synonym("FIRST_SEEN_DATE")
+    FIRST_SEEN_DATE: Mapped[Optional[str]] = mapped_column(Date)
+    first_seen_date: Mapped[Optional[str]] = synonym("FIRST_SEEN_DATE")
 
-    OPT_OUT_FLAG: Mapped[str] = mapped_column(String)
-    opt_out_flag: Mapped[str] = synonym("OPT_OUT_FLAG")
+    OPT_OUT_FLAG: Mapped[Optional[str]] = mapped_column(String)
+    opt_out_flag: Mapped[Optional[str]] = synonym("OPT_OUT_FLAG")
 
     PATIENT_DEMOGRAPHICS: Mapped[List["Patient_Demographics"]] = relationship(
         back_populates="UKRR_PATIENT"
@@ -108,35 +108,35 @@ class Patient_Demographics(Base):
     FORENAME: Mapped[str] = mapped_column(String)
     forename: Mapped[str] = synonym("FORENAME")
 
-    BIRTH_NAME: Mapped[str] = mapped_column(String)
-    birth_name: Mapped[str] = synonym("BIRTH_NAME")
+    BIRTH_NAME: Mapped[Optional[str]] = mapped_column(String)
+    birth_name: Mapped[Optional[str]] = synonym("BIRTH_NAME")
 
-    ALIAS_NAME: Mapped[str] = mapped_column(String)
-    alias_name: Mapped[str] = synonym("ALIAS_NAME")
+    ALIAS_NAME: Mapped[Optional[str]] = mapped_column(String)
+    alias_name: Mapped[Optional[str]] = synonym("ALIAS_NAME")
 
     DATE_BIRTH: Mapped[str] = mapped_column(Date)
     date_birth: Mapped[str] = synonym("DATE_BIRTH")
 
-    DATE_DEATH: Mapped[str] = mapped_column(Date)
-    date_death: Mapped[str] = synonym("DATE_DEATH")
+    DATE_DEATH: Mapped[Optional[str]] = mapped_column(Date)
+    date_death: Mapped[Optional[str]] = synonym("DATE_DEATH")
 
-    NHS_NO: Mapped[int] = mapped_column("NEW_NHS_NO", Integer)
-    nhs_no: Mapped[int] = synonym("NHS_NO")
+    NHS_NO: Mapped[Optional[int]] = mapped_column("NEW_NHS_NO", Integer)
+    nhs_no: Mapped[Optional[int]] = synonym("NHS_NO")
 
-    CHI_NO: Mapped[int] = mapped_column(Integer)
-    chi_no: Mapped[int] = synonym("CHI_NO")
+    CHI_NO: Mapped[Optional[int]] = mapped_column(Integer)
+    chi_no: Mapped[Optional[int]] = synonym("CHI_NO")
 
-    HSC_NO: Mapped[int] = mapped_column(Integer)
-    hsc_no: Mapped[int] = synonym("HSC_NO")
+    HSC_NO: Mapped[Optional[int]] = mapped_column(Integer)
+    hsc_no: Mapped[Optional[int]] = synonym("HSC_NO")
 
-    UKTSSA_NO: Mapped[int] = mapped_column(Integer)
-    uk_tssa_no: Mapped[int] = synonym("UKTSSA_NO")
+    UKTSSA_NO: Mapped[Optional[int]] = mapped_column(Integer)
+    uk_tssa_no: Mapped[Optional[int]] = synonym("UKTSSA_NO")
 
     LOCAL_HOSP_NO: Mapped[str] = mapped_column(String)
     local_hosp_no: Mapped[str] = synonym("LOCAL_HOSP_NO")
 
-    FIRST_SEEN_DATE: Mapped[str] = mapped_column(Date)
-    first_seen_date: Mapped[str] = synonym("FIRST_SEEN_DATE")
+    FIRST_SEEN_DATE: Mapped[Optional[str]] = mapped_column(Date)
+    first_seen_date: Mapped[Optional[str]] = synonym("FIRST_SEEN_DATE")
 
     UKRR_PATIENT: Mapped["UKRRPatient"] = relationship(
         back_populates="PATIENT_DEMOGRAPHICS"
@@ -150,23 +150,23 @@ class RSA_Extraction_Items(Base):
     ID: Mapped[int] = mapped_column(Integer, primary_key=True)
     id: Mapped[int] = synonym("ID")
 
-    ITEM_GROUP: Mapped[str] = mapped_column(String(50))
-    item_group: Mapped[str] = synonym("ITEM_GROUP")
+    ITEM_GROUP: Mapped[Optional[str]] = mapped_column(String(50))
+    item_group: Mapped[Optional[str]] = synonym("ITEM_GROUP")
 
-    BLOCK_PREFIX: Mapped[str] = mapped_column(String(10))
-    block_prefix: Mapped[str] = synonym("BLOCK_PREFIX")
+    BLOCK_PREFIX: Mapped[Optional[str]] = mapped_column(String(10))
+    block_prefix: Mapped[Optional[str]] = synonym("BLOCK_PREFIX")
 
-    VALUE_ITEM: Mapped[str] = mapped_column(String(10))
-    value_item: Mapped[str] = synonym("VALUE_ITEM")
+    VALUE_ITEM: Mapped[Optional[str]] = mapped_column(String(10))
+    value_item: Mapped[Optional[str]] = synonym("VALUE_ITEM")
 
-    DATE_ITEM: Mapped[str] = mapped_column(String(10))
-    date_item: Mapped[str] = synonym("DATE_ITEM")
+    DATE_ITEM: Mapped[Optional[str]] = mapped_column(String(10))
+    date_item: Mapped[Optional[str]] = synonym("DATE_ITEM")
 
-    PREPOST: Mapped[str] = mapped_column(String(10))
-    prepost: Mapped[str] = synonym("PREPOST")
+    PREPOST: Mapped[Optional[str]] = mapped_column(String(10))
+    prepost: Mapped[Optional[str]] = synonym("PREPOST")
 
-    DESCRIPTION: Mapped[str] = mapped_column(String(50))
-    description: Mapped[str] = synonym("DESCRIPTION")
+    DESCRIPTION: Mapped[Optional[str]] = mapped_column(String(50))
+    description: Mapped[Optional[str]] = synonym("DESCRIPTION")
 
 
 class UKRR_Deleted_Patient(Base):
@@ -186,20 +186,20 @@ class UKRR_Deleted_Patient(Base):
     FORENAME: Mapped[str] = mapped_column("FORENAME", String)
     forename: Mapped[str] = synonym("FORENAME")
 
-    SEX: Mapped[str] = mapped_column("SEX", String)
-    sex: Mapped[str] = synonym("SEX")
+    SEX: Mapped[Optional[str]] = mapped_column("SEX", String)
+    sex: Mapped[Optional[str]] = synonym("SEX")
 
-    NHS_NO: Mapped[int] = mapped_column("NEW_NHS_NO", Integer)
-    nhs_no: Mapped[int] = synonym("NHS_NO")
+    NHS_NO: Mapped[Optional[int]] = mapped_column("NEW_NHS_NO", Integer)
+    nhs_no: Mapped[Optional[int]] = synonym("NHS_NO")
 
-    CHI_NO: Mapped[int] = mapped_column("CHI_NO", Integer)
-    chi_no: Mapped[int] = synonym("CHI_NO")
+    CHI_NO: Mapped[Optional[int]] = mapped_column("CHI_NO", Integer)
+    chi_no: Mapped[Optional[int]] = synonym("CHI_NO")
 
-    HSC_NO: Mapped[int] = mapped_column("HSC_NO", Integer)
-    hsc_no: Mapped[int] = synonym("HSC_NO")
+    HSC_NO: Mapped[Optional[int]] = mapped_column("HSC_NO", Integer)
+    hsc_no: Mapped[Optional[int]] = synonym("HSC_NO")
 
-    UKTSSA_NO: Mapped[int] = mapped_column("UKTSSA_NO", Integer)
-    uk_tssa_no: Mapped[int] = synonym("UKTSSA_NO")
+    UKTSSA_NO: Mapped[Optional[int]] = mapped_column("UKTSSA_NO", Integer)
+    uk_tssa_no: Mapped[Optional[int]] = synonym("UKTSSA_NO")
 
     LOCAL_HOSP_NO: Mapped[str] = mapped_column("LOCAL_HOSP_NO", String)
     local_hosp_no: Mapped[str] = synonym("LOCAL_HOSP_NO")
@@ -207,20 +207,20 @@ class UKRR_Deleted_Patient(Base):
     DATE_BIRTH: Mapped[str] = mapped_column("DATE_BIRTH", Date)
     date_birth: Mapped[str] = synonym("DATE_BIRTH")
 
-    DATE_DEATH: Mapped[str] = mapped_column("DATE_DEATH", Date)
-    date_death: Mapped[str] = synonym("DATE_DEATH")
+    DATE_DEATH: Mapped[Optional[str]] = mapped_column("DATE_DEATH", Date)
+    date_death: Mapped[Optional[str]] = synonym("DATE_DEATH")
 
     audit_date: Mapped[Optional[datetime]] = mapped_column("AUDIT_DATE", DateTime)
     audit_time: Mapped[Optional[int]] = mapped_column("AUDIT_TIME", Numeric(8, 0))
 
-    AUTHORISED_BY: Mapped[str] = mapped_column("AUTHORISED_BY", String)
-    authorised_by: Mapped[str] = synonym("AUTHORISED_BY")
+    AUTHORISED_BY: Mapped[Optional[str]] = mapped_column("AUTHORISED_BY", String)
+    authorised_by: Mapped[Optional[str]] = synonym("AUTHORISED_BY")
 
-    USERNAME: Mapped[str] = mapped_column("USERNAME", String)
-    username: Mapped[str] = synonym("USERNAME")
+    USERNAME: Mapped[Optional[str]] = mapped_column("USERNAME", String)
+    username: Mapped[Optional[str]] = synonym("USERNAME")
 
-    DESCRIPTION: Mapped[str] = mapped_column("DESCRIPTION", String)
-    description: Mapped[str] = synonym("DESCRIPTION")
+    DESCRIPTION: Mapped[Optional[str]] = mapped_column("DESCRIPTION", String)
+    description: Mapped[Optional[str]] = synonym("DESCRIPTION")
 
     DUPLICATE_RR_NO: Mapped[Optional[int]] = mapped_column("DUPLICATE_RR_NO", Integer)
     duplicate_rr_no: Mapped[Optional[int]] = synonym("DUPLICATE_RR_NO")
@@ -244,191 +244,191 @@ class QuarterlyTreatment(Base):
     HOSP_CENTRE: Mapped[str] = mapped_column(String, primary_key=True)
     hosp_centre: Mapped[str] = synonym("HOSP_CENTRE")
 
-    DATE_END: Mapped[str] = mapped_column(DateTime)
-    date_end: Mapped[str] = synonym("DATE_END")
+    DATE_END: Mapped[Optional[str]] = mapped_column(DateTime)
+    date_end: Mapped[Optional[str]] = synonym("DATE_END")
 
-    ADD_HAEMO_ON_PD: Mapped[str] = mapped_column(String)
-    add_haemo_on_pd: Mapped[str] = synonym("ADD_HAEMO_ON_PD")
+    ADD_HAEMO_ON_PD: Mapped[Optional[str]] = mapped_column(String)
+    add_haemo_on_pd: Mapped[Optional[str]] = synonym("ADD_HAEMO_ON_PD")
 
-    CREATININE: Mapped[float] = mapped_column(Numeric(38, 4))
-    creatinine: Mapped[float] = synonym("CREATININE")
+    CREATININE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    creatinine: Mapped[Optional[float]] = synonym("CREATININE")
 
-    UREA: Mapped[float] = mapped_column(Numeric(38, 4))
-    urea: Mapped[float] = synonym("UREA")
+    UREA: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    urea: Mapped[Optional[float]] = synonym("UREA")
 
-    HAEMOGLOBIN: Mapped[float] = mapped_column(Numeric(38, 4))
-    haemoglobin: Mapped[float] = synonym("HAEMOGLOBIN")
+    HAEMOGLOBIN: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    haemoglobin: Mapped[Optional[float]] = synonym("HAEMOGLOBIN")
 
-    FERRETIN: Mapped[float] = mapped_column(Numeric(38, 4))
-    ferretin: Mapped[float] = synonym("FERRETIN")
+    FERRETIN: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    ferretin: Mapped[Optional[float]] = synonym("FERRETIN")
 
-    ALBUMIN: Mapped[float] = mapped_column(Numeric(38, 4))
-    albumin: Mapped[float] = synonym("ALBUMIN")
+    ALBUMIN: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    albumin: Mapped[Optional[float]] = synonym("ALBUMIN")
 
-    ALUMINIUM: Mapped[float] = mapped_column(Numeric(38, 4))
-    aluminium: Mapped[float] = synonym("ALUMINIUM")
+    ALUMINIUM: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    aluminium: Mapped[Optional[float]] = synonym("ALUMINIUM")
 
-    HBA1C: Mapped[float] = mapped_column(Numeric(38, 4))
-    hba1c: Mapped[float] = synonym("HBA1C")
+    HBA1C: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    hba1c: Mapped[Optional[float]] = synonym("HBA1C")
 
-    CHOLESTEROL: Mapped[float] = mapped_column(Numeric(38, 4))
-    cholesterol: Mapped[float] = synonym("CHOLESTEROL")
+    CHOLESTEROL: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    cholesterol: Mapped[Optional[float]] = synonym("CHOLESTEROL")
 
-    IPTH: Mapped[float] = mapped_column(Numeric(38, 4))
-    ipth: Mapped[float] = synonym("IPTH")
+    IPTH: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    ipth: Mapped[Optional[float]] = synonym("IPTH")
 
-    CALCIUM_UNCORR: Mapped[float] = mapped_column(Numeric(38, 4))
-    calcium_uncorr: Mapped[float] = synonym("CALCIUM_UNCORR")
+    CALCIUM_UNCORR: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    calcium_uncorr: Mapped[Optional[float]] = synonym("CALCIUM_UNCORR")
 
-    CALCIUM_CORR: Mapped[float] = mapped_column(Numeric(38, 4))
-    calcium_corr: Mapped[float] = synonym("CALCIUM_CORR")
+    CALCIUM_CORR: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    calcium_corr: Mapped[Optional[float]] = synonym("CALCIUM_CORR")
 
-    PHOSPHATE: Mapped[float] = mapped_column(Numeric(38, 4))
-    phosphate: Mapped[float] = synonym("PHOSPHATE")
+    PHOSPHATE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    phosphate: Mapped[Optional[float]] = synonym("PHOSPHATE")
 
-    BICARBONATE: Mapped[float] = mapped_column(Numeric(38, 4))
-    bicarbonate: Mapped[float] = synonym("BICARBONATE")
+    BICARBONATE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    bicarbonate: Mapped[Optional[float]] = synonym("BICARBONATE")
 
-    SYSTOLIC_BP: Mapped[float] = mapped_column(Numeric(20, 0))
-    systolic_bp: Mapped[float] = synonym("SYSTOLIC_BP")
+    SYSTOLIC_BP: Mapped[Optional[float]] = mapped_column(Numeric(20, 0))
+    systolic_bp: Mapped[Optional[float]] = synonym("SYSTOLIC_BP")
 
-    DIASTOLIC_BP: Mapped[float] = mapped_column(Numeric(20, 0))
-    diastolic_bp: Mapped[float] = synonym("DIASTOLIC_BP")
+    DIASTOLIC_BP: Mapped[Optional[float]] = mapped_column(Numeric(20, 0))
+    diastolic_bp: Mapped[Optional[float]] = synonym("DIASTOLIC_BP")
 
-    WEIGHT: Mapped[float] = mapped_column(Numeric(38, 4))
-    weight: Mapped[float] = synonym("WEIGHT")
+    WEIGHT: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    weight: Mapped[Optional[float]] = synonym("WEIGHT")
 
-    UREA_REDUCTION_RATIO: Mapped[float] = mapped_column(Numeric(38, 4))
-    urea_reduction_ratio: Mapped[float] = synonym("UREA_REDUCTION_RATIO")
+    UREA_REDUCTION_RATIO: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    urea_reduction_ratio: Mapped[Optional[float]] = synonym("UREA_REDUCTION_RATIO")
 
-    EPO_USE: Mapped[str] = mapped_column(String)
-    epo_use: Mapped[str] = synonym("EPO_USE")
+    EPO_USE: Mapped[Optional[str]] = mapped_column(String)
+    epo_use: Mapped[Optional[str]] = synonym("EPO_USE")
 
-    HD_SUPERVISON: Mapped[str] = mapped_column(String)
-    hd_supervison: Mapped[str] = synonym("HD_SUPERVISON")
+    HD_SUPERVISON: Mapped[Optional[str]] = mapped_column(String)
+    hd_supervison: Mapped[Optional[str]] = synonym("HD_SUPERVISON")
 
-    DIALYSER_USED: Mapped[str] = mapped_column(String)
-    dialyser_used: Mapped[str] = synonym("DIALYSER_USED")
+    DIALYSER_USED: Mapped[Optional[str]] = mapped_column(String)
+    dialyser_used: Mapped[Optional[str]] = synonym("DIALYSER_USED")
 
-    FLOW_RATE: Mapped[float] = mapped_column(Numeric(20, 0))
-    flow_rate: Mapped[float] = synonym("FLOW_RATE")
+    FLOW_RATE: Mapped[Optional[float]] = mapped_column(Numeric(20, 0))
+    flow_rate: Mapped[Optional[float]] = synonym("FLOW_RATE")
 
-    DIAL_REUSE: Mapped[str] = mapped_column(String)
-    dial_reuse: Mapped[str] = synonym("DIAL_REUSE")
+    DIAL_REUSE: Mapped[Optional[str]] = mapped_column(String)
+    dial_reuse: Mapped[Optional[str]] = synonym("DIAL_REUSE")
 
-    TIMES_PER_WEEK: Mapped[float] = mapped_column(Numeric(20, 0))
-    times_per_week: Mapped[float] = synonym("TIMES_PER_WEEK")
+    TIMES_PER_WEEK: Mapped[Optional[float]] = mapped_column(Numeric(20, 0))
+    times_per_week: Mapped[Optional[float]] = synonym("TIMES_PER_WEEK")
 
-    DIAL_TIME: Mapped[float] = mapped_column(Numeric(38, 4))
-    dial_time: Mapped[float] = synonym("DIAL_TIME")
+    DIAL_TIME: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    dial_time: Mapped[Optional[float]] = synonym("DIAL_TIME")
 
-    BICARB_DIAL: Mapped[str] = mapped_column(String)
-    bicarb_dial: Mapped[str] = synonym("BICARB_DIAL")
+    BICARB_DIAL: Mapped[Optional[str]] = mapped_column(String)
+    bicarb_dial: Mapped[Optional[str]] = synonym("BICARB_DIAL")
 
-    WEEKLY_FLUID_VOL: Mapped[float] = mapped_column(Numeric(38, 4))
-    weekly_fluid_vol: Mapped[float] = synonym("WEEKLY_FLUID_VOL")
+    WEEKLY_FLUID_VOL: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    weekly_fluid_vol: Mapped[Optional[float]] = synonym("WEEKLY_FLUID_VOL")
 
-    BAG_SIZE: Mapped[float] = mapped_column(Numeric(38, 4))
-    bag_size: Mapped[float] = synonym("BAG_SIZE")
+    BAG_SIZE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    bag_size: Mapped[Optional[float]] = synonym("BAG_SIZE")
 
-    CENTRE_PRI: Mapped[str] = mapped_column(String)
-    centre_pri: Mapped[str] = synonym("CENTRE_PRI")
+    CENTRE_PRI: Mapped[Optional[str]] = mapped_column(String)
+    centre_pri: Mapped[Optional[str]] = synonym("CENTRE_PRI")
 
-    POST_SYSTOLIC_BP: Mapped[float] = mapped_column(Numeric(20, 0))
-    post_systolic_bp: Mapped[float] = synonym("POST_SYSTOLIC_BP")
+    POST_SYSTOLIC_BP: Mapped[Optional[float]] = mapped_column(Numeric(20, 0))
+    post_systolic_bp: Mapped[Optional[float]] = synonym("POST_SYSTOLIC_BP")
 
-    POST_DIASTOLIC_BP: Mapped[float] = mapped_column(Numeric(20, 0))
-    post_diastolic_bp: Mapped[float] = synonym("POST_DIASTOLIC_BP")
+    POST_DIASTOLIC_BP: Mapped[Optional[float]] = mapped_column(Numeric(20, 0))
+    post_diastolic_bp: Mapped[Optional[float]] = synonym("POST_DIASTOLIC_BP")
 
-    SODIUM: Mapped[float] = mapped_column(Numeric(38, 4))
-    sodium: Mapped[float] = synonym("SODIUM")
+    SODIUM: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    sodium: Mapped[Optional[float]] = synonym("SODIUM")
 
-    PD_DIALYSATE_KTV: Mapped[float] = mapped_column(Numeric(38, 4))
-    pd_dialysate_ktv: Mapped[float] = synonym("PD_DIALYSATE_KTV")
+    PD_DIALYSATE_KTV: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    pd_dialysate_ktv: Mapped[Optional[float]] = synonym("PD_DIALYSATE_KTV")
 
-    PD_URINE_KTV: Mapped[float] = mapped_column(Numeric(38, 4))
-    pd_urine_ktv: Mapped[float] = synonym("PD_URINE_KTV")
+    PD_URINE_KTV: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    pd_urine_ktv: Mapped[Optional[float]] = synonym("PD_URINE_KTV")
 
-    PD_NPCR: Mapped[float] = mapped_column(Numeric(38, 4))
-    pd_npcr: Mapped[float] = synonym("PD_NPCR")
+    PD_NPCR: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    pd_npcr: Mapped[Optional[float]] = synonym("PD_NPCR")
 
-    CRP: Mapped[float] = mapped_column(Numeric(38, 4))
-    crp: Mapped[float] = synonym("CRP")
+    CRP: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    crp: Mapped[Optional[float]] = synonym("CRP")
 
-    LDL_CHOLESTEROL: Mapped[float] = mapped_column(Numeric(38, 4))
-    ldl_cholesterol: Mapped[float] = synonym("LDL_CHOLESTEROL")
+    LDL_CHOLESTEROL: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    ldl_cholesterol: Mapped[Optional[float]] = synonym("LDL_CHOLESTEROL")
 
-    HDL_CHOLESTEROL: Mapped[float] = mapped_column(Numeric(38, 4))
-    hdl_cholesterol: Mapped[float] = synonym("HDL_CHOLESTEROL")
+    HDL_CHOLESTEROL: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    hdl_cholesterol: Mapped[Optional[float]] = synonym("HDL_CHOLESTEROL")
 
-    TRIGLYCERIDES: Mapped[float] = mapped_column(Numeric(38, 4))
-    triglycerides: Mapped[float] = synonym("TRIGLYCERIDES")
+    TRIGLYCERIDES: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    triglycerides: Mapped[Optional[float]] = synonym("TRIGLYCERIDES")
 
-    WAITING_LIST_STATUS: Mapped[str] = mapped_column(String)
-    waiting_list_status: Mapped[str] = synonym("WAITING_LIST_STATUS")
+    WAITING_LIST_STATUS: Mapped[Optional[str]] = mapped_column(String)
+    waiting_list_status: Mapped[Optional[str]] = synonym("WAITING_LIST_STATUS")
 
-    CREATININE_FIRST_MONTH: Mapped[float] = mapped_column(Numeric(38, 4))
-    creatinine_first_month: Mapped[float] = synonym("CREATININE_FIRST_MONTH")
+    CREATININE_FIRST_MONTH: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    creatinine_first_month: Mapped[Optional[float]] = synonym("CREATININE_FIRST_MONTH")
 
-    CREATININE_SECOND_MONTH: Mapped[float] = mapped_column(Numeric(38, 4))
-    creatinine_second_month: Mapped[float] = synonym("CREATININE_SECOND_MONTH")
+    CREATININE_SECOND_MONTH: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    creatinine_second_month: Mapped[Optional[float]] = synonym("CREATININE_SECOND_MONTH")
 
-    PERCENT_HYPOCHROMIC: Mapped[float] = mapped_column(Numeric(38, 4))
-    percent_hypochromic: Mapped[float] = synonym("PERCENT_HYPOCHROMIC")
+    PERCENT_HYPOCHROMIC: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    percent_hypochromic: Mapped[Optional[float]] = synonym("PERCENT_HYPOCHROMIC")
 
-    MCH: Mapped[float] = mapped_column(Numeric(38, 4))
-    mch: Mapped[float] = synonym("MCH")
+    MCH: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    mch: Mapped[Optional[float]] = synonym("MCH")
 
-    B12: Mapped[float] = mapped_column(Numeric(38, 4))
-    b12: Mapped[float] = synonym("B12")
+    B12: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    b12: Mapped[Optional[float]] = synonym("B12")
 
-    RED_CELL_FOLATE: Mapped[float] = mapped_column(Numeric(38, 4))
-    red_cell_folate: Mapped[float] = synonym("RED_CELL_FOLATE")
+    RED_CELL_FOLATE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    red_cell_folate: Mapped[Optional[float]] = synonym("RED_CELL_FOLATE")
 
-    TRANSFERRIN_SATURATION: Mapped[float] = mapped_column(Numeric(38, 4))
-    transferrin_saturation: Mapped[float] = synonym("TRANSFERRIN_SATURATION")
+    TRANSFERRIN_SATURATION: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    transferrin_saturation: Mapped[Optional[float]] = synonym("TRANSFERRIN_SATURATION")
 
-    SERUM_POTASSIUM: Mapped[float] = mapped_column(Numeric(38, 4))
-    serum_potassium: Mapped[float] = synonym("SERUM_POTASSIUM")
+    SERUM_POTASSIUM: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    serum_potassium: Mapped[Optional[float]] = synonym("SERUM_POTASSIUM")
 
-    PROTEIN_CREATININE_RATIO: Mapped[float] = mapped_column(Numeric(38, 4))
-    protein_creatinine_ratio: Mapped[float] = synonym("PROTEIN_CREATININE_RATIO")
+    PROTEIN_CREATININE_RATIO: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    protein_creatinine_ratio: Mapped[Optional[float]] = synonym("PROTEIN_CREATININE_RATIO")
 
-    ALBUMIN_CREATININE_RATIO: Mapped[float] = mapped_column(Numeric(38, 4))
-    albumin_creatinine_ratio: Mapped[float] = synonym("ALBUMIN_CREATININE_RATIO")
+    ALBUMIN_CREATININE_RATIO: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    albumin_creatinine_ratio: Mapped[Optional[float]] = synonym("ALBUMIN_CREATININE_RATIO")
 
-    SERUM_CELL_FOLATE: Mapped[float] = mapped_column(Numeric(38, 4))
-    serum_cell_folate: Mapped[float] = synonym("SERUM_CELL_FOLATE")
+    SERUM_CELL_FOLATE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    serum_cell_folate: Mapped[Optional[float]] = synonym("SERUM_CELL_FOLATE")
 
-    ACE_INHIBITOR: Mapped[str] = mapped_column(String)
-    ace_inhibitor: Mapped[str] = synonym("ACE_INHIBITOR")
+    ACE_INHIBITOR: Mapped[Optional[str]] = mapped_column(String)
+    ace_inhibitor: Mapped[Optional[str]] = synonym("ACE_INHIBITOR")
 
-    RENAGEL: Mapped[str] = mapped_column(String)
-    renagel: Mapped[str] = synonym("RENAGEL")
+    RENAGEL: Mapped[Optional[str]] = mapped_column(String)
+    renagel: Mapped[Optional[str]] = synonym("RENAGEL")
 
-    LANTHANUM: Mapped[str] = mapped_column(String)
-    lanthanum: Mapped[str] = synonym("LANTHANUM")
+    LANTHANUM: Mapped[Optional[str]] = mapped_column(String)
+    lanthanum: Mapped[Optional[str]] = synonym("LANTHANUM")
 
-    CINACALCET: Mapped[str] = mapped_column(String)
-    cinacalcet: Mapped[str] = synonym("CINACALCET")
+    CINACALCET: Mapped[Optional[str]] = mapped_column(String)
+    cinacalcet: Mapped[Optional[str]] = synonym("CINACALCET")
 
-    CALCIUM_BASED_BINDER: Mapped[str] = mapped_column(String)
-    calcium_based_binder: Mapped[str] = synonym("CALCIUM_BASED_BINDER")
+    CALCIUM_BASED_BINDER: Mapped[Optional[str]] = mapped_column(String)
+    calcium_based_binder: Mapped[Optional[str]] = synonym("CALCIUM_BASED_BINDER")
 
-    ALUCAPS: Mapped[str] = mapped_column(String)
-    alucaps: Mapped[str] = synonym("ALUCAPS")
+    ALUCAPS: Mapped[Optional[str]] = mapped_column(String)
+    alucaps: Mapped[Optional[str]] = synonym("ALUCAPS")
 
-    SERUM_URATE: Mapped[float] = mapped_column(Numeric(38, 4))
-    serum_urate: Mapped[float] = synonym("SERUM_URATE")
+    SERUM_URATE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    serum_urate: Mapped[Optional[float]] = synonym("SERUM_URATE")
 
-    STATIN_DRUG_USE: Mapped[str] = mapped_column(String)
-    statin_drug_use: Mapped[str] = synonym("STATIN_DRUG_USE")
+    STATIN_DRUG_USE: Mapped[Optional[str]] = mapped_column(String)
+    statin_drug_use: Mapped[Optional[str]] = synonym("STATIN_DRUG_USE")
 
-    HBA1C_MMOL: Mapped[float] = mapped_column(Numeric(3, 0))
-    hba1c_mmol: Mapped[float] = synonym("HBA1C_MMOL")
+    HBA1C_MMOL: Mapped[Optional[float]] = mapped_column(Numeric(3, 0))
+    hba1c_mmol: Mapped[Optional[float]] = synonym("HBA1C_MMOL")
 
-    ALKALINE_PHOSPHATASE: Mapped[float] = mapped_column(Numeric(38, 4))
-    alkaline_phosphatase: Mapped[float] = synonym("ALKALINE_PHOSPHATASE")
+    ALKALINE_PHOSPHATASE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
+    alkaline_phosphatase: Mapped[Optional[float]] = synonym("ALKALINE_PHOSPHATASE")
 
 
 class ModalityCodes(Base):
