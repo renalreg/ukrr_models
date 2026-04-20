@@ -1,4 +1,5 @@
 """SQLAlchemy models for NHSBT"""
+from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, Integer, MetaData, String
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, synonym
