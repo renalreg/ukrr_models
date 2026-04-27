@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.2.0](https://github.com/renalreg/ukrr_models/compare/v3.1.0...v3.2.0) (2026-04-27)
+
+
+### Features
+
+* add audit date/time to deleted patient model ([6367bd1](https://github.com/renalreg/ukrr_models/commit/6367bd1c0b106b93cc1c3ac173acda84d98ba5ed))
+* allow to run from CLI ([9c1e5f8](https://github.com/renalreg/ukrr_models/commit/9c1e5f8aaf597069b7f9f805187773f1cea44303))
+* REN-124 new delete function ([de8f1f4](https://github.com/renalreg/ukrr_models/commit/de8f1f45496a68bb0958f8092769b105f9b43b4f))
+* REN-172 undelete function ([#48](https://github.com/renalreg/ukrr_models/issues/48)) ([b395881](https://github.com/renalreg/ukrr_models/commit/b395881ad011f7b081f4d1fc65dc75260ea47b20))
+* rewrite delete function ([6e93235](https://github.com/renalreg/ukrr_models/commit/6e932353ef2a15d774b41fc1e26119a678b15409))
+* RR-533 move and rewrite merge_patient function from rr_editor ([#45](https://github.com/renalreg/ukrr_models/issues/45)) ([935c57e](https://github.com/renalreg/ukrr_models/commit/935c57ec0e3ede897cf8687f1ff4a16ce9e0d02f))
+
+
+### Bug Fixes
+
+* **#51:** fixed type hints of models ([#52](https://github.com/renalreg/ukrr_models/issues/52)) ([f88374d](https://github.com/renalreg/ukrr_models/commit/f88374d3644b55670bd294f6d66e3b1d21fc1700))
+* add removal metadata ([07bf818](https://github.com/renalreg/ukrr_models/commit/07bf81845d0d83c78d36f11c099669e7045d23da))
+* column renames and proper time formats ([6d5391f](https://github.com/renalreg/ukrr_models/commit/6d5391f6b91bfa23f9d205f681842e5f881fc14d))
+* print full traceback on error ([4611fbc](https://github.com/renalreg/ukrr_models/commit/4611fbc8fcb3a5c5b4b12ce79f5aca1b12655186))
+* typo ([df94614](https://github.com/renalreg/ukrr_models/commit/df94614a30438fe2f7644744844d5c68862a0fac))
+* typo ([f6828d7](https://github.com/renalreg/ukrr_models/commit/f6828d771d0889ab64d24748778104c62c56b68f))
+* update models ([ad29f81](https://github.com/renalreg/ukrr_models/commit/ad29f81abb2f476162e71560d5de5d52ffdb7817))
+
 ## [3.1.0](https://github.com/renalreg/ukrr_models/compare/v3.0.1...v3.1.0) (2025-07-30)
 
 
