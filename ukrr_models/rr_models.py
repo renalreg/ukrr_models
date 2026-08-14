@@ -371,7 +371,9 @@ class QuarterlyTreatment(Base):
     creatinine_first_month: Mapped[Optional[float]] = synonym("CREATININE_FIRST_MONTH")
 
     CREATININE_SECOND_MONTH: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
-    creatinine_second_month: Mapped[Optional[float]] = synonym("CREATININE_SECOND_MONTH")
+    creatinine_second_month: Mapped[Optional[float]] = synonym(
+        "CREATININE_SECOND_MONTH"
+    )
 
     PERCENT_HYPOCHROMIC: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
     percent_hypochromic: Mapped[Optional[float]] = synonym("PERCENT_HYPOCHROMIC")
@@ -392,10 +394,14 @@ class QuarterlyTreatment(Base):
     serum_potassium: Mapped[Optional[float]] = synonym("SERUM_POTASSIUM")
 
     PROTEIN_CREATININE_RATIO: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
-    protein_creatinine_ratio: Mapped[Optional[float]] = synonym("PROTEIN_CREATININE_RATIO")
+    protein_creatinine_ratio: Mapped[Optional[float]] = synonym(
+        "PROTEIN_CREATININE_RATIO"
+    )
 
     ALBUMIN_CREATININE_RATIO: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
-    albumin_creatinine_ratio: Mapped[Optional[float]] = synonym("ALBUMIN_CREATININE_RATIO")
+    albumin_creatinine_ratio: Mapped[Optional[float]] = synonym(
+        "ALBUMIN_CREATININE_RATIO"
+    )
 
     SERUM_CELL_FOLATE: Mapped[Optional[float]] = mapped_column(Numeric(38, 4))
     serum_cell_folate: Mapped[Optional[float]] = synonym("SERUM_CELL_FOLATE")

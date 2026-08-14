@@ -1,4 +1,5 @@
 """SQLAlchemy models for NHSBT"""
+
 from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, Integer, MetaData, String
@@ -90,7 +91,9 @@ class UKTTransplant(Base):
     registration_end_status: Mapped[Optional[str]] = synonym("REGISTRATION_END_STATUS")
 
     TRANSPLANT_CONSIDERATION: Mapped[Optional[str]] = mapped_column(String(20))
-    transplant_consideration: Mapped[Optional[str]] = synonym("TRANSPLANT_CONSIDERATION")
+    transplant_consideration: Mapped[Optional[str]] = synonym(
+        "TRANSPLANT_CONSIDERATION"
+    )
 
     TRANSPLANT_DIALYSIS: Mapped[Optional[str]] = mapped_column(String(12))
     transplant_dialysis: Mapped[Optional[str]] = synonym("TRANSPLANT_DIALYSIS")
