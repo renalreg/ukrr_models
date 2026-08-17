@@ -9,7 +9,7 @@ class TableNameExtractor(ast.NodeVisitor):
     def visit_ClassDef(self, node):
         if table_name := next(
             (
-                statement.value.s
+                statement.value.value
                 for statement in node.body
                 if isinstance(statement, ast.Assign)
                 and (
