@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/renalreg/ukrr_models/compare/v3.2.0...v3.2.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* replace deprecated ast.Str attribute and ruff format ([#56](https://github.com/renalreg/ukrr_models/issues/56)) ([077f9b3](https://github.com/renalreg/ukrr_models/commit/077f9b39ab929151832df27c57d739500ea95e41))
+
 ## [3.2.0](https://github.com/renalreg/ukrr_models/compare/v3.1.0...v3.2.0) (2026-04-27)
 
 
